@@ -424,7 +424,6 @@ my %SolarEdgeMeter1parseInfo = (
          'unpack' => 'sssss>',
            'expr' => 'ExprMeter($hash,$name,"X_Meter_1_M_AC_PF",$val[0],$val[1],$val[2],$val[3],$val[4])',	# conversion of raw value to visible value                   
                   },                   
-);                                      
 );
 
 
