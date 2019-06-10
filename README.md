@@ -8,4 +8,4 @@ Modbusversion => 0017 - 10.06.2019
 
 Update in FHEM:
 
-update all https://github.com/CaptainRoot/FHEM---SolarEdge/blob/master/controls_SolarEdge.txt
+update all https://raw.githubusercontent.com/CaptainRoot/FHEM---SolarEdge/master/controls_SolarEdge.txt
