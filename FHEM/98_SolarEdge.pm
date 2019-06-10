@@ -1,5 +1,5 @@
 ##############################################
-# $Id: 98_SolarEdge.pm 0019 2019-06-22  15:49:00Z CaptainRoot $
+# $Id: 98_SolarEdge.pm 0020 2019-06-10 17:00:00Z CaptainRoot $
 #
 #	fhem Modul für Wechselrichter SolarEdge SE5K
 #	verwendet Modbus.pm als Basismodul für die eigentliche Implementation des Protokolls.
@@ -38,7 +38,7 @@ sub SolarEdge_Define($$);		# wird beim 'define' von AESGI-Protokoll Gerät aufge
 sub SolarEdge_Notify($$);		# wird beim 'Notify' vom Device aufgerufen
 sub ExprMppt($$$$$$$$);				# Berechnung Wert mit ScaleFactor unter Beachtung Operating_State
 
-my $SolarEdge_Version = '0019 - 10.06.2019 15:39';
+my $SolarEdge_Version = '0020 - 10.06.2019 17:00';
 
 my %SolarEdgedeviceInfo = (
     "h" =>  {
