@@ -1,5 +1,5 @@
 ##############################################
-# $Id: 98_SolarEdge.pm 0017 2019-06-22 12:43:00Z CaptainRoot $
+# $Id: 98_SolarEdge.pm 0019 2019-06-22  15:49:00Z CaptainRoot $
 #
 #	fhem Modul für Wechselrichter SolarEdge SE5K
 #	verwendet Modbus.pm als Basismodul für die eigentliche Implementation des Protokolls.
@@ -38,7 +38,7 @@ sub SolarEdge_Define($$);		# wird beim 'define' von AESGI-Protokoll Gerät aufge
 sub SolarEdge_Notify($$);		# wird beim 'Notify' vom Device aufgerufen
 sub ExprMppt($$$$$$$$);				# Berechnung Wert mit ScaleFactor unter Beachtung Operating_State
 
-my $SolarEdge_Version = '0018 - 10.06.2019 14:58';
+my $SolarEdge_Version = '0019 - 10.06.2019 15:39';
 
 my %SolarEdgedeviceInfo = (
     "h" =>  {
@@ -133,21 +133,33 @@ my %SolarEdgeparseInfo = (
                  },
     "h40076"	=>	{	#AC Voltage Phase AB value
       'reading' => 'I_AC_VoltageAB',
+      'expr'	  => '$val/10',
+      'setexpr'	=> '$val',
 				},
     "h40077"	=>	{	#AC Voltage Phase BC value
       'reading' => 'I_AC_VoltageBC',
+      'expr'	  => '$val/10',
+      'setexpr'	=> '$val',
 				},
     "h40078" =>	{	#AC Voltage Phase CA value
       'reading' => 'I_AC_VoltageCA',
+      'expr'	  => '$val/10',
+      'setexpr'	=> '$val',
 				},
     "h40079"	=>	{	#AC Voltage Phase AN value
       'reading' => 'I_AC_VoltageAN',
+      'expr'	  => '$val/10',
+      'setexpr'	=> '$val',
 				},
     "h40080"	=>	{	#AC Voltage Phase BN value
       'reading'	=> 'I_AC_VoltageBN',
+      'expr'	  => '$val/10',
+      'setexpr'	=> '$val',
 				},
     "h40081"	=>	{	#AC Voltage Phase CN value
       'reading' => 'I_AC_VoltageCN',
+      'expr'	  => '$val/10',
+      'setexpr'	=> '$val',
 				},
     "h40082"	=>	{	#
       'reading' => 'I_AC_Voltage_SF',
@@ -350,20 +362,28 @@ my %SolarEdgeMeter1parseInfo = (
       "h40190" => { # 40190 (Len 5) 40190 to 40194
             'len' => '5', #M_AC_Current, M_AC_Current_A(L1), M_AC_Current_B(L2), M_AC_Current_C(L3), M_AC_Current_SF
         'reading' => 'X_Meter_1_Block_AC_Current',
-         'unpack' => 'nnnns>',
+         'unpack' => 'sssss>',
            'expr' => 'ExprMeter($hash,$name,"X_Meter_1_M_AC_Current",$val[0],$val[1],$val[2],$val[3],$val[4])',	# conversion of raw value to visible value
                    },                  
       "h40195"	=> {	#Line to Neutral AC Voltage (average of activephases)
         'reading' => 'X_Meter_1_M_AC_Voltage_LN',
+        'expr'	  => '$val/100',
+        'setexpr'	=> '$val',
                    },
       "h40196"	=> {	#Phase A to Neutral AC Voltage
         'reading' => 'X_Meter_1_M_AC_Voltage_AN',
+        'expr'	  => '$val/100',
+        'setexpr'	=> '$val',
                    },
       "h40197" =>	{	#Phase B to Neutral AC Voltage
         'reading' => 'X_Meter_1_M_AC_Voltage_BN',
+        'expr'	  => '$val/100',
+        'setexpr'	=> '$val',
                    },
       "h40198"	=> {	#Phase C to Neutral AC Voltage
         'reading' => 'X_Meter_1_M_AC_Voltage_CN',
+        'expr'	  => '$val/100',
+        'setexpr'	=> '$val',
                    },             
 
       "h40199" => { # 40199 (Len 5) 40199 to 40202
@@ -377,8 +397,36 @@ my %SolarEdgeMeter1parseInfo = (
         'reading' => 'X_Meter_1_Block_AC_Frequency',
          'unpack' => 'ns>',
            'expr' => 'ExprMeter($hash,$name,"X_Meter_1_M_AC_Frequency",$val[0],$val[1],0,0,0)',	# conversion of raw value to visible value
-                    },                  
+                  },
+
+      "h40206" => { #Real Power 40206 (Len 5) 40206 to 40210 
+            'len' => '5', #M_AC_Power, M_AC_Power_A, M_AC_Power_B, M_AC_Power_C, M_AC_Power_SF, 
+        'reading' => 'X_Meter_1_Block_AC_Power',
+         'unpack' => 'sssss>',
+           'expr' => 'ExprMeter($hash,$name,"X_Meter_1_M_AC_Power",$val[0],$val[1],$val[2],$val[3],$val[4])',	# conversion of raw value to visible value                   
+                  }, 
+
+      "h40211" => { #Apparent Power 40211 (Len 5) 40211 to 40215
+            'len' => '5', #M_AC_VA, M_AC_VA_A, M_AC_VA_B, M_AC_VA_C, M_AC_VA_SF, 
+        'reading' => 'X_Meter_1_Block_AC_VA',
+         'unpack' => 'sssss>',
+           'expr' => 'ExprMeter($hash,$name,"X_Meter_1_M_AC_VA",$val[0],$val[1],$val[2],$val[3],$val[4])',	# conversion of raw value to visible value                   
+                  },
+      "h40216" => { #Reactive Power 40216 (Len 5) 40211 to 40220
+            'len' => '5', #M_AC_VAR, M_AC_VAR_A, M_AC_VAR_B, M_AC_VAR_C, M_AC_VAR_SF, 
+        'reading' => 'X_Meter_1_Block_AC_VAR',
+         'unpack' => 'sssss>',
+           'expr' => 'ExprMeter($hash,$name,"X_Meter_1_M_AC_VAR",$val[0],$val[1],$val[2],$val[3],$val[4])',	# conversion of raw value to visible value                   
+                  },   
+      "h40221" => { #Power Factor 40221 (Len 5) 40211 to 40225
+            'len' => '5', #M_AC_PF, M_AC_PF_A, M_AC_PF_B, M_AC_PF_C, M_AC_PF_SF, 
+        'reading' => 'X_Meter_1_Block_AC_PF',
+         'unpack' => 'sssss>',
+           'expr' => 'ExprMeter($hash,$name,"X_Meter_1_M_AC_PF",$val[0],$val[1],$val[2],$val[3],$val[4])',	# conversion of raw value to visible value                   
+                  },                   
+);                                      
 );
+
 
 
 #####################################
@@ -445,9 +493,9 @@ sub ExprMppt($$$$$$$$){ # Berechnung Wert mit ScaleFactor unter Beachtung Operat
         readingsBulkUpdate($hash, $ReadingName,$vval[0]);
   } elsif ($ReadingName eq "I_AC_Current") {
         readingsBulkUpdate($hash, $ReadingName, $vval[0] * 10 ** $vval[4]);
-        readingsBulkUpdate($hash, $ReadingName."L1", $vval[1] * 10 ** $vval[4]);
-        readingsBulkUpdate($hash, $ReadingName."L2", $vval[2] * 10 ** $vval[4]);
-        readingsBulkUpdate($hash, $ReadingName."L3", $vval[3] * 10 ** $vval[4]);
+        readingsBulkUpdate($hash, $ReadingName."_A", $vval[1] * 10 ** $vval[4]);
+        readingsBulkUpdate($hash, $ReadingName."_B", $vval[2] * 10 ** $vval[4]);
+        readingsBulkUpdate($hash, $ReadingName."_C", $vval[3] * 10 ** $vval[4]);
         readingsBulkUpdate($hash, $ReadingName."_SF", $vval[4]);
   } elsif ($ReadingName eq "I_AC_Power" || $ReadingName eq "I_DC_Power") {
         my $POWER =   ($vval[0] * 10 ** $vval[1]);
@@ -535,14 +583,18 @@ sub ExprMeter($$$$$$$$){ # Berechnung Wert mit ScaleFactor unter Beachtung Opera
   Log3 $hash, 4, "SolarEdge $DevName : ".$vval[0]." Reg :".$ReadingName;
   my $WertNeu = @vval." ".$vval[0]." ".$vval[1]." ".$vval[2]." ".$vval[3]." ".$vval[4] ;
 
-  if ($ReadingName eq "X_Meter_1_Block_C_Model") {
+  if ($ReadingName eq "X_Meter_1_C_Model") {
         Log3 $hash, 4, "SolarEdge $DevName Meter Model : ".$vval[0].":".$vval[1].":".$vval[2].":".$vval[3].":".$vval[4];
         readingsBulkUpdate($hash, $ReadingName,$vval[0]);
-  } elsif ($ReadingName eq "X_Meter_1_Block_AC_Current") {
+  } elsif ($ReadingName eq "X_Meter_1_M_AC_Current" || 
+           $ReadingName eq "X_Meter_1_M_AC_Power" || 
+           $ReadingName eq "X_Meter_1_M_AC_VA" || 
+           $ReadingName eq "X_Meter_1_M_AC_VAR" || 
+           $ReadingName eq "X_Meter_1_M_AC_PF") {
         readingsBulkUpdate($hash, $ReadingName, $vval[0] * 10 ** $vval[4]);
-        readingsBulkUpdate($hash, $ReadingName."_L1", $vval[1] * 10 ** $vval[4]);
-        readingsBulkUpdate($hash, $ReadingName."_L2", $vval[2] * 10 ** $vval[4]);
-        readingsBulkUpdate($hash, $ReadingName."_L3", $vval[3] * 10 ** $vval[4]);
+        readingsBulkUpdate($hash, $ReadingName."_A", $vval[1] * 10 ** $vval[4]);
+        readingsBulkUpdate($hash, $ReadingName."_B", $vval[2] * 10 ** $vval[4]);
+        readingsBulkUpdate($hash, $ReadingName."_C", $vval[3] * 10 ** $vval[4]);
         readingsBulkUpdate($hash, $ReadingName."_SF", $vval[4]);
   } elsif ($ReadingName eq "X_Meter_1_M_AC_Voltage") {
         readingsBulkUpdate($hash, $ReadingName."_LL", $vval[0] * 10 ** $vval[4]);
