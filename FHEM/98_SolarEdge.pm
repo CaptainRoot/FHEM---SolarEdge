@@ -416,27 +416,27 @@ my %SolarEdgeMeter1parseInfo = (
             'len' => '5', #M_AC_VAR, M_AC_VAR_A, M_AC_VAR_B, M_AC_VAR_C, M_AC_VAR_SF, 
         'reading' => 'X_Meter_1_Block_AC_VAR',
          'unpack' => 'sssss>',
-           'expr' => 'ExprMeter($hash,$name,"X_Meter_1_M_AC_VAR",$val[0],$val[1],$val[2],$val[3],$val[4],0,0,0,0',	# conversion of raw value to visible value                   
+           'expr' => 'ExprMeter($hash,$name,"X_Meter_1_M_AC_VAR",$val[0],$val[1],$val[2],$val[3],$val[4],0,0,0,0)',	# conversion of raw value to visible value                   
                   },   
       "h40221" => { #Power Factor 40221 (Len 5) 40211 to 40225
             'len' => '5', #M_AC_PF, M_AC_PF_A, M_AC_PF_B, M_AC_PF_C, M_AC_PF_SF, 
         'reading' => 'X_Meter_1_Block_AC_PF',
          'unpack' => 'sssss>',
-           'expr' => 'ExprMeter($hash,$name,"X_Meter_1_M_AC_PF",$val[0],$val[1],$val[2],$val[3],$val[4],0,0,0,0',	# conversion of raw value to visible value                   
+           'expr' => 'ExprMeter($hash,$name,"X_Meter_1_M_AC_PF",$val[0],$val[1],$val[2],$val[3],$val[4],0,0,0,0)',	# conversion of raw value to visible value                   
                   }, 
 
       "h40226" => { #Accumulated Energy Real Energy 40226 to 40242
             'len' => '17', #M_Exported, M_Exported_A, M_Exported_B, M_Exported_C, M_Imported, M_Imported_A, M_Imported_B, M_Imported_C, M_Energy_W_SF
         'reading' => 'X_Meter_1_Block_Energy_W',
          'unpack' => 'NNNNNNNNs>',
-           'expr' => 'ExprMeter($hash,$name,"X_Meter_1_M_Energy_W",$val[0],$val[1],$val[2],$val[3],$val[4],$val[5],$val[6],$val[7],$val[8]',	# conversion of raw value to visible value                   
+           'expr' => 'ExprMeter($hash,$name,"X_Meter_1_M_Energy_W",$val[0],$val[1],$val[2],$val[3],$val[4],$val[5],$val[6],$val[7],$val[8])',	# conversion of raw value to visible value                   
                   },  
 
       "h40243" => { #Apparent Energy Real Energy 40243 to 40259
             'len' => '17', #M_Exported, M_Exported_A, M_Exported_B, M_Exported_C, M_Imported, M_Imported_A, M_Imported_B, M_Imported_C, M_Energy_W_SF
         'reading' => 'X_Meter_1_Block_Energy_VA',
          'unpack' => 'NNNNNNNNs>',
-           'expr' => 'ExprMeter($hash,$name,"X_Meter_1_M_Energy_VA",$val[0],$val[1],$val[2],$val[3],$val[4],$val[5],$val[6],$val[7],$val[8]',	# conversion of raw value to visible value                   
+           'expr' => 'ExprMeter($hash,$name,"X_Meter_1_M_Energy_VA",$val[0],$val[1],$val[2],$val[3],$val[4],$val[5],$val[6],$val[7],$val[8])',	# conversion of raw value to visible value                   
                   },                                      
 );
 
