@@ -38,7 +38,7 @@ sub SolarEdge_Define($$);		# wird beim 'define' von AESGI-Protokoll Gerät aufge
 sub SolarEdge_Notify($$);		# wird beim 'Notify' vom Device aufgerufen
 sub ExprMppt($$$$$$$$);				# Berechnung Wert mit ScaleFactor unter Beachtung Operating_State
 
-my $SolarEdge_Version = '0016 - 22.04.2019';
+my $SolarEdge_Version = '0017 - 10.06.2019';
 
 my %SolarEdgedeviceInfo = (
     "h" =>  {
@@ -327,7 +327,7 @@ SolarEdge_Initialize($)
                             ."pv_energy pv_energytoday pv_energytoweek pv_energytomonth pv_energytoyear "
                             ."$readingFnAttributes"
                             . " " .		# Standard Attributes like IODEv etc
-                            
+
 		$hash->{ObjAttrList} . " " .	  	# Attributes to add or overwrite parseInfo definitions
     $hash->{DevAttrList} . " " .      # Attributes to add or overwrite devInfo definitions
         "poll-.*"." ".							  # overwrite poll with poll-ReadingName
