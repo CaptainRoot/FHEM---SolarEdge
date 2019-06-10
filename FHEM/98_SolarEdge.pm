@@ -1,5 +1,5 @@
 ##############################################
-# $Id: 98_SolarEdge.pm 0016 2019-04-22 22:00:00Z pejonp $
+# $Id: 98_SolarEdge.pm 0017 2019-06-22 12:43:00Z CaptainRoot $
 #
 #	fhem Modul für Wechselrichter SolarEdge SE5K
 #	verwendet Modbus.pm als Basismodul für die eigentliche Implementation des Protokolls.
