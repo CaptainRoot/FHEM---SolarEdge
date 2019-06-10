@@ -38,7 +38,7 @@ sub SolarEdge_Define($$);		# wird beim 'define' von AESGI-Protokoll Gerät aufge
 sub SolarEdge_Notify($$);		# wird beim 'Notify' vom Device aufgerufen
 sub ExprMppt($$$$$$$$);				# Berechnung Wert mit ScaleFactor unter Beachtung Operating_State
 
-my $SolarEdge_Version = '0017 - 10.06.2019';
+my $SolarEdge_Version = '0018 - 10.06.2019 14:58';
 
 my %SolarEdgedeviceInfo = (
     "h" =>  {
@@ -125,32 +125,33 @@ my %SolarEdgeparseInfo = (
 	#				'reading'		=> 'I_AC_Current_SF',			# name of the reading for this value
   #        },
 
-    "h40071" =>  {   # 40072 (Len 5) 40072 to 40076
+    "h40071" =>  { # 40072 (Len 5) 40072 to 40076
           'len' => '5', #I_AC_Current, I_AC_CurrentA, I_AC_CurrentB, I_AC_CurrentC, I_AC_Current_SF
       'reading' => 'Block_AC_Current',
        'unpack' => 'nnnns>',
          'expr' => 'ExprMppt($hash,$name,"I_AC_Current",$val[0],$val[1],$val[2],$val[3],$val[4])',	# conversion of raw value to visible value
                  },
-    "h40076"	=>	{	#
+    "h40076"	=>	{	#AC Voltage Phase AB value
       'reading' => 'I_AC_VoltageAB',
 				},
-    "h40077"	=>	{	#
+    "h40077"	=>	{	#AC Voltage Phase BC value
       'reading' => 'I_AC_VoltageBC',
 				},
-    "h40078" =>	{	#
+    "h40078" =>	{	#AC Voltage Phase CA value
       'reading' => 'I_AC_VoltageCA',
 				},
-    "h40079"	=>	{	#
+    "h40079"	=>	{	#AC Voltage Phase AN value
       'reading' => 'I_AC_VoltageAN',
 				},
-    "h40080"	=>	{	#
+    "h40080"	=>	{	#AC Voltage Phase BN value
       'reading'	=> 'I_AC_VoltageBN',
 				},
-    "h40081"	=>	{	#
+    "h40081"	=>	{	#AC Voltage Phase CN value
       'reading' => 'I_AC_VoltageCN',
 				},
     "h40082"	=>	{	#
       'reading' => 'I_AC_Voltage_SF',
+      'unpack' => 's>',
 				},
 
   #  "h40083"	=>	{	# 40084 1 I_AC_Leistung int16 Watt AC-Leistungswert
@@ -304,12 +305,89 @@ my %SolarEdgeparseInfo = (
 # Ende parseInfo
 );
 
+my %SolarEdgeMeter1parseInfo = (
+###############################################################################################################
+# Holding Register
+###############################################################################################################
+      #C_SunSpec_ID ignored
+      "h40123" =>  { # 40123 16 C_Manufacturer String(32) Meter manufacturer
+              'reading' => 'X_Meter_1_C_Manufacturer',
+                 'type' => 'VT_String',
+                   },
+      "h40139" =>  {# 40139 16 C_Model String(32) Meter model   
+              'reading' => 'X_Meter_1_Block_C_Model',
+                 'type' => 'VT_String',
+                 'expr' => 'ExprMeter($hash,$name,"X_Meter_1_C_Model",$val[0],0,0,0,0)',	# conversion of raw value to visible value
+                   },
+      "h40155" =>  {# 40155 16 C_Option String(16) Meter Option  Export + Import, Production, consumption,
+              'reading' => 'X_Meter_1_C_Option',
+                 'type' => 'VT_String',
+                   },
+      "h40163" =>  {# 40163 16 C_Version String(16) Meter version
+              'reading' => 'X_Meter_1_C_Version',
+                 'type' => 'VT_String',
+                   },
+      "h40171" =>  {# 40171 16 C_Version String(16) Meter SN
+              'reading' => 'X_Meter_1_C_SerialNumber',
+              'type' => 'VT_String',
+                   },
+      "h40187" =>  {# 40187 16 C_Version String(16) Inverter Modbus ID ?
+              'reading'  => 'X_Meter_1_C_DeviceAddress',
+               'defPoll' => '0',
+                  'poll' => 'once',
+                   },
+      "h40188" =>	{	# 40188 1 C_SunSpec_DID uint16 SunSpecMODBUS 
+                    # Map:
+                    #  Single Phase (AN or AB) Meter (201)
+                    #  Split Single Phase (ABN) Meter (202)
+                    #  Wye-Connect Three Phase (ABCN) Meter (203)
+                    #  Delta-Connect Three Phase (ABC) Meter(204)
+              'reading'	=> 'X_Meter_1_C_SunSpec_DID',			# name of the reading for this value
+                  'len' => '1' ,
+                  'map' => '201:single phase, 202:split single phase, 203:wye-connect three phase, 204:delta-connect three phase meter',
+                  'poll' => 'once',
+                    },
+      "h40190" => { # 40190 (Len 5) 40190 to 40194
+            'len' => '5', #M_AC_Current, M_AC_Current_A(L1), M_AC_Current_B(L2), M_AC_Current_C(L3), M_AC_Current_SF
+        'reading' => 'X_Meter_1_Block_AC_Current',
+         'unpack' => 'nnnns>',
+           'expr' => 'ExprMeter($hash,$name,"X_Meter_1_M_AC_Current",$val[0],$val[1],$val[2],$val[3],$val[4])',	# conversion of raw value to visible value
+                   },                  
+      "h40195"	=> {	#Line to Neutral AC Voltage (average of activephases)
+        'reading' => 'X_Meter_1_M_AC_Voltage_LN',
+                   },
+      "h40196"	=> {	#Phase A to Neutral AC Voltage
+        'reading' => 'X_Meter_1_M_AC_Voltage_AN',
+                   },
+      "h40197" =>	{	#Phase B to Neutral AC Voltage
+        'reading' => 'X_Meter_1_M_AC_Voltage_BN',
+                   },
+      "h40198"	=> {	#Phase C to Neutral AC Voltage
+        'reading' => 'X_Meter_1_M_AC_Voltage_CN',
+                   },             
+
+      "h40199" => { # 40199 (Len 5) 40199 to 40202
+            'len' => '5', #M_AC_Voltage_LL, M_AC_Voltage_AB, M_AC_Voltage_BC, M_AC_Voltage_CA, M_AC_Voltage_SF, 
+        'reading' => 'X_Meter_1_Block_AC_Voltage_LL',
+         'unpack' => 'nnnns>',
+           'expr' => 'ExprMeter($hash,$name,"X_Meter_1_M_AC_Voltage",$val[0],$val[1],$val[2],$val[3],$val[4])',	# conversion of raw value to visible value                   
+                  },
+      "h40204" =>  {# 40086 (Len 2) 40086 to 40087 AC Frequency
+            'len' => '2',# M_AC_Freq, M_AC_Freq_SF
+        'reading' => 'X_Meter_1_Block_AC_Frequency',
+         'unpack' => 'ns>',
+           'expr' => 'ExprMeter($hash,$name,"X_Meter_1_M_AC_Frequency",$val[0],$val[1],0,0,0)',	# conversion of raw value to visible value
+                    },                  
+);
+
 
 #####################################
 sub
 SolarEdge_Initialize($)
 {
     my ($hash) = @_;
+
+    my %SolarEdgeparseInfoAll = (%SolarEdgeparseInfo, %SolarEdgeMeter1parseInfo);
 
 	  require "$attr{global}{modpath}/FHEM/98_Modbus.pm";
     require "$attr{global}{modpath}/FHEM/DevIo.pm";
@@ -319,7 +397,7 @@ SolarEdge_Initialize($)
  #   $hash->{ParseFn}   = "SolarEdge_Parse";
  #   $hash->{NotifyFn}   = "SolarEdge_Notify";
     $hash->{AttrFn}	 = "SolarEdge_Attr";
-	  $hash->{parseInfo}  = \%SolarEdgeparseInfo;			# defines registers for this Modbus Defive
+	  $hash->{parseInfo}  = \%SolarEdgeparseInfoAll;			# defines registers for this Modbus Defive
     $hash->{deviceInfo} = \%SolarEdgedeviceInfo;		# defines properties of the device like
 	  ModbusLD_Initialize($hash);							# Generic function of the Modbus module does the rest
 
@@ -432,6 +510,55 @@ sub ExprMppt($$$$$$$$){ # Berechnung Wert mit ScaleFactor unter Beachtung Operat
 	Log3 $hash, 4, "SolarEdge $DevName : ".$WertNeu;
 	return $WertNeu;
 }
+
+###################################
+sub ExprMeter($$$$$$$$){ # Berechnung Wert mit ScaleFactor unter Beachtung Operating_State
+
+  #	Expr, conversion of raw value to visible value
+	my $hash			  = $_[0];						# Übergabe Geräte-Hash
+	my $DevName			= $_[1];						# Übergabe Geräte-Name
+	my $ReadingName	= $_[2];
+  my @vval;
+  $vval[0]			= $_[3];
+  $vval[1]			= $_[4];
+  $vval[2]			= $_[5];
+  $vval[3]			= $_[6];
+  $vval[4]			= $_[7];
+
+  # Register
+  my ($Psec,$Pmin,$Phour,$Pmday,$Pmonth,$Pyear,$Pwday,$Pyday,$Pisdst) = localtime(time()+61);
+  my $Pyear2 = $Pyear+1900;
+  #my ($Psec,$Pmin,$Phour,$Pmday,$Pmonth,$Pyear,$Pwday,$Pyday,$Pisdst) = localtime(TimeNow());
+  my $time_now = TimeNow();
+  my $datum0 = substr($time_now,0,10);
+
+  Log3 $hash, 4, "SolarEdge $DevName : ".$vval[0]." Reg :".$ReadingName;
+  my $WertNeu = @vval." ".$vval[0]." ".$vval[1]." ".$vval[2]." ".$vval[3]." ".$vval[4] ;
+
+  if ($ReadingName eq "X_Meter_1_Block_C_Model") {
+        Log3 $hash, 4, "SolarEdge $DevName Meter Model : ".$vval[0].":".$vval[1].":".$vval[2].":".$vval[3].":".$vval[4];
+        readingsBulkUpdate($hash, $ReadingName,$vval[0]);
+  } elsif ($ReadingName eq "X_Meter_1_Block_AC_Current") {
+        readingsBulkUpdate($hash, $ReadingName, $vval[0] * 10 ** $vval[4]);
+        readingsBulkUpdate($hash, $ReadingName."_L1", $vval[1] * 10 ** $vval[4]);
+        readingsBulkUpdate($hash, $ReadingName."_L2", $vval[2] * 10 ** $vval[4]);
+        readingsBulkUpdate($hash, $ReadingName."_L3", $vval[3] * 10 ** $vval[4]);
+        readingsBulkUpdate($hash, $ReadingName."_SF", $vval[4]);
+  } elsif ($ReadingName eq "X_Meter_1_M_AC_Voltage") {
+        readingsBulkUpdate($hash, $ReadingName."_LL", $vval[0] * 10 ** $vval[4]);
+        readingsBulkUpdate($hash, $ReadingName."_AB", $vval[1] * 10 ** $vval[4]);
+        readingsBulkUpdate($hash, $ReadingName."_BC", $vval[2] * 10 ** $vval[4]);
+        readingsBulkUpdate($hash, $ReadingName."_CA", $vval[3] * 10 ** $vval[4]);
+        readingsBulkUpdate($hash, $ReadingName."_SF", $vval[4]);
+  }else{
+      readingsBulkUpdate($hash, $ReadingName, $vval[0] * 10 ** $vval[1]);
+      readingsBulkUpdate($hash, $ReadingName."_SF", $vval[1]);
+  }
+
+	Log3 $hash, 4, "SolarEdge $DevName : ".$WertNeu;
+	return $WertNeu;
+}
+
 
 1;
 
