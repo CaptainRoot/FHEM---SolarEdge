@@ -9,3 +9,4 @@ Add Meter 1 (POC)
 Add Real Power, Apparent Power, Reactive Power
 Bugfix in Meter MODEL
 Rename Phases L1 = A, L2 = B, L3 = C in oder to fit SunSpec
+Add Meter Real Energy and  Apparent Energy
