@@ -41,25 +41,25 @@ sub ExprMppt($$$$$$$$);				# Berechnung Wert mit ScaleFactor unter Beachtung Ope
 my $SolarEdge_Version = '0016 - 22.04.2019';
 
 my %SolarEdgedeviceInfo = (
-    "h" =>  { 
+    "h" =>  {
         'combine' => '30',
-        'defPoll' => '1',   
+        'defPoll' => '1',
     },
-    "type-VT_String" =>  {  
+    "type-VT_String" =>  {
         'decode' => 'cp850',
         'encode' => 'utf8',
           'expr' => '$val =~ s/[\00]+//gr',
            'len' => '8',
        'revRegs' => '0',
         'unpack' => 'a16',
-     'poll' => 'once',  # only poll once after define (or after a set)
+          'poll' => 'once',  # only poll once after define (or after a set)
     },
-    "type-VT_String4" =>  { 
+    "type-VT_String4" =>  {
         'decode' => 'cp850',
         'encode' => 'utf8',
-        'expr' => '$val =~ s/[\00]+//gr',
-        'len' => '4',
-        'revRegs' => '0',
+          'expr' => '$val =~ s/[\00]+//gr',
+           'len' => '4',
+       'revRegs' => '0',
         'unpack' => 'a8',
     },
 );
@@ -69,38 +69,42 @@ my %SolarEdgeparseInfo = (
 ###############################################################################################################
 # Holding Register
 ###############################################################################################################
-          "h40000" =>  {  # 40001 2 C_SunSpec_ID uint32 Wert = "SunS" (0x53756e53). Identifiziert dies eindeutig als eine SunSpec Modbus-Karte
-                                   'len' => '2',
-                               'reading' => 'C_SunSpec_ID',
-                               'revRegs' => '0',
-                                'unpack' => 'a4',
-                                  'poll' => 'once',
-                       },
-          "h40004" =>  { # 40005 16 C_Hersteller String(32) Bei SunSpec eingetragener Wert = " SolarEdge "
-                               'reading' => 'C_Manufacturer',
-                                  'type' => 'VT_String',
-                                                 },
-          "h40020" =>  {       'reading' => 'Block_C_Model',
-                                  'type' => 'VT_String',
-                                  'expr' => 'ExprMppt($hash,$name,"C_Model",$val[0],0,0,0,0)',	# conversion of raw value to visible value
-                       },
-          "h40044" =>  {       'reading' => 'C_Version',
-                                  'type' => 'VT_String',
-                       },
-          "h40052" =>  {       'reading' => 'C_SerialNumber',
-                                  'type' => 'VT_String',
-                       },
-          "h40068" =>  {	#
-                     					'reading'  => 'C_DeviceAddress',
-                               'defPoll' => '0',
-                                  'poll' => 'once',
-                       },
-          "h40069" =>	{	# 40070 1 C_SunSpec_DID uint16 101 = Einphasig 102 = Spaltphase1 103 = Dreiphasig
-                     					'reading'	=> 'C_SunSpec_DID',			# name of the reading for this value
-                        				  'len' => '1' ,
-                                  'map' => '101:Einphasig, 102:Spaltphase1, 103:Dreiphasig',
-                                 'poll' => 'once',
-               				},
+      "h40000" =>  {  # 40001 2 C_SunSpec_ID uint32 Wert = "SunS" (0x53756e53). Identifiziert dies eindeutig als eine SunSpec Modbus-Karte
+                  'len' => '2',
+              'reading' => 'C_SunSpec_ID',
+              'revRegs' => '0',
+               'unpack' => 'a4',
+                 'poll' => 'once',
+                   },
+      "h40004" =>  { # 40005 16 C_Hersteller String(32) Bei SunSpec eingetragener Wert = " SolarEdge "
+              'reading' => 'C_Manufacturer',
+                 'type' => 'VT_String',
+                   },
+      "h40020" =>  {       
+              'reading' => 'Block_C_Model',
+                 'type' => 'VT_String',
+                 'expr' => 'ExprMppt($hash,$name,"C_Model",$val[0],0,0,0,0)',	# conversion of raw value to visible value
+                   },
+      "h40044" =>  {
+              'reading' => 'C_Version',
+                 'type' => 'VT_String',
+                   },
+      "h40052" =>  {
+              'reading' => 'C_SerialNumber',
+              'type' => 'VT_String',
+                   },
+      "h40068" =>  {	# MODBUS Unit ID
+              'reading'  => 'C_DeviceAddress',
+               'defPoll' => '0',
+                  'poll' => 'once',
+                   },
+      "h40069" =>	{	# 40070 1 C_SunSpec_DID uint16 101 = Einphasig 102 = Spaltphase1 103 = Dreiphasig
+              'reading'	=> 'C_SunSpec_DID',			# name of the reading for this value
+                  'len' => '1' ,
+                  'map' => '101:single phase, 102:split phase, 103:three phase',
+                  'poll' => 'once',
+                  },
+
   #  "h40071"	=>	{	# 40072 1 I_AC_Strom uint16 Ampere AC-Gesamtstromwert
 	#				'reading'		=> 'I_AC_Current',			# name of the reading for this value
   #         'format'		=> '%.2f A',
@@ -120,45 +124,49 @@ my %SolarEdgeparseInfo = (
   #  "h40075"	=>	{	# 40076 1 I_AC_Strom_SF uint16 AC-Strom Skalierungsfaktor
 	#				'reading'		=> 'I_AC_Current_SF',			# name of the reading for this value
   #        },
-     "h40071" =>  {     # 40076 1 I_AC_Strom_SF uint16 AC-Strom Skalierungsfaktor
-        'len' => '5',
-    'reading' => 'Block_AC_Current',
-     'unpack' => 'nnnns>',
-       'expr' => 'ExprMppt($hash,$name,"I_AC_Current",$val[0],$val[1],$val[2],$val[3],$val[4])',	# conversion of raw value to visible value
-                  },
-     "h40076"	=>	{	#
-    'reading' => 'I_AC_VoltageAB',
+
+    "h40071" =>  {   # 40072 (Len 5) 40072 to 40076
+          'len' => '5', #I_AC_Current, I_AC_CurrentA, I_AC_CurrentB, I_AC_CurrentC, I_AC_Current_SF
+      'reading' => 'Block_AC_Current',
+       'unpack' => 'nnnns>',
+         'expr' => 'ExprMppt($hash,$name,"I_AC_Current",$val[0],$val[1],$val[2],$val[3],$val[4])',	# conversion of raw value to visible value
+                 },
+    "h40076"	=>	{	#
+      'reading' => 'I_AC_VoltageAB',
 				},
-     "h40077"	=>	{	#
-    'reading' => 'I_AC_VoltageBC',
+    "h40077"	=>	{	#
+      'reading' => 'I_AC_VoltageBC',
 				},
-     "h40078" =>	{	#
-    'reading' => 'I_AC_VoltageCA',
+    "h40078" =>	{	#
+      'reading' => 'I_AC_VoltageCA',
 				},
-     "h40079"	=>	{	#
-    'reading' => 'I_AC_VoltageAN',
+    "h40079"	=>	{	#
+      'reading' => 'I_AC_VoltageAN',
 				},
-     "h40080"	=>	{	#
-    'reading'	=> 'I_AC_VoltageBN',
+    "h40080"	=>	{	#
+      'reading'	=> 'I_AC_VoltageBN',
 				},
-     "h40081"	=>	{	#
-    'reading' => 'I_AC_VoltageCN',
+    "h40081"	=>	{	#
+      'reading' => 'I_AC_VoltageCN',
 				},
-     "h40082"	=>	{	#
-    'reading' => 'I_AC_Voltage_SF',
+    "h40082"	=>	{	#
+      'reading' => 'I_AC_Voltage_SF',
 				},
+
   #  "h40083"	=>	{	# 40084 1 I_AC_Leistung int16 Watt AC-Leistungswert
 	#				'reading'	=> 'I_AC_Power',
   #        },
   #  "h40084"	=>	{	#
 	#				'reading'	=> 'I_AC_Power_SF',
   #       },
-     "h40083" =>  {
-        'len' => '2',
+
+    "h40083" =>  {# 40084 (Len 2) 40084 to 40085 AC Power
+        'len' => '2', #  I_AC_Power, I_AC_Power_SF
     'reading' => 'Block_AC_Power',
      'unpack' => 'ns>',
        'expr' => 'ExprMppt($hash,$name,"I_AC_Power",$val[0],$val[1],0,0,0)',	# conversion of raw value to visible value
                   },
+
 #   	"h40085"	=>	{	# 40086 1 I_AC_Frequenz uint16 Hertz Frequenzwert
 #					'reading'	=> 'I_AC_Frequency',
 #          'format'		=> '%.f Hz',					# format string for sprintf
@@ -168,48 +176,56 @@ my %SolarEdgeparseInfo = (
 #     "h40086"	=>	{	# 40086 1 I_AC_Frequency_SF uint16 Frequenz Skalierungsfaktor
 #					'reading'		=> 'I_AC_Frequency_SF',
 #				},
-     "h40085" =>  {
-        'len' => '2',
+
+    "h40085" =>  {# 40086 (Len 2) 40086 to 40087 AC Frequency
+        'len' => '2',# I_AC_Frequency, I_AC_Frequency_SF
     'reading' => 'Block_AC_Frequency',
      'unpack' => 'ns>',
        'expr' => 'ExprMppt($hash,$name,"I_AC_Frequency",$val[0],$val[1],0,0,0)',	# conversion of raw value to visible value
-                  },  
+                  },
+
 #     "h40087"	=>	{	#
 #					'reading'	=> 'I_AC_VA',
 #				},
 #    "h40088"	=>	{	#
 #				'reading'		=> 'I_AC_VA_SF',
 #			},
-     "h40087" =>  {
-        'len' => '2',
+
+    "h40087" =>  {# 40088 (Len 2) 40088 to 40089 Apparent Power (Scheinleistung)
+        'len' => '2', # I_AC_VA,  I_AC_VA_SF
     'reading' => 'Block_AC_VA',
      'unpack' => 'ns>',
        'expr' => 'ExprMppt($hash,$name,"I_AC_VA",$val[0],$val[1],0,0,0)',	# conversion of raw value to visible value
                   },
+
 #     "h40089"	=>	{	#
 #				'reading'	=> 'I_AC_VAR',
 #				},
 #     "h40090"	=>	{	#
 #					'reading'		=> 'I_AC_VAR_SF',
 #				},
-     "h40089" =>  {
-              'len' => '2',
+
+     "h40089" =>  {# 40090 (Len 2) 40090 to 40091 Reactive Power (Blindleistung)
+              'len' => '2',# I_AC_VAR, I_AC_VAR_SF
           'reading' => 'Block_AC_VAR',
            'unpack' => 'ns>',
              'expr' => 'ExprMppt($hash,$name,"I_AC_VAR",$val[0],$val[1],0,0,0)',	# conversion of raw value to visible value
                   },
+
 #     "h40091"	=>	{	#
 #					'reading'	=> 'I_AC_PF',
 #				},
 #    "h40092"	=>	{	#
 #					'reading'		=> 'I_AC_PF_SF',
 #				},
-     "h40091" =>  {
-              'len' => '2',
+
+     "h40091" =>  {# 40090 (Len 2) 40090 to 40091 Power Factor (Leistungsfaktor)
+              'len' => '2', #I_AC_PF, I_AC_PF_SF
           'reading' => 'Block_AC_PF',
            'unpack' => 'ns>',
              'expr' => 'ExprMppt($hash,$name,"I_AC_PF",$val[0],$val[1],0,0,0)',	# conversion of raw value to visible value
                   },
+
 #    "h40093" =>  {
 #               'expr' => '$val / 1000',
 #             'format' => '%.2f kWh',
@@ -220,12 +236,14 @@ my %SolarEdgeparseInfo = (
 #    "h40095"	=>	{	#
 #					'reading'		=> 'I_AC_Energy_WH_SF',
 #				},
-     "h40093" =>  {
-              'len' => '3',
+
+     "h40093" =>  {# 40094 (Len 3) 40094 to 40096 AC Lifetime Energy production
+              'len' => '3', #I_AC_Energy_WH (2), I_AC_Energy_WH_SF
           'reading' => 'Block_AC_Energy_WH',
            'unpack' => 'l>s>',
              'expr' => 'ExprMppt($hash,$name,"I_AC_Energy_WH_kWh",$val[0],$val[1],0,0,0)',	# conversion of raw value to visible value
-                  },        
+                  },
+
 #     "h40096"	=>	{	#
 #					'reading'		=> 'I_DC_Current',
 #          'format'		=> '%.2f A',
@@ -233,12 +251,14 @@ my %SolarEdgeparseInfo = (
 #     "h40097"	=>	{	#
 #				'reading'		=> 'I_DC_Current_SF',
 #				},
-     "h40096" =>  {
-              'len' => '2',
+
+     "h40096" =>  {# 40097 (Len 2) 40097 to 40098 DC Current
+              'len' => '2',# I_DC_Current, I_DC_Current_SF
           'reading' => 'Block_DC_Current',
            'unpack' => 'ns>',
              'expr' => 'ExprMppt($hash,$name,"I_DC_Current",$val[0],$val[1],0,0,0)',	# conversion of raw value to visible value
-                  },        
+                  },
+
 #     "h40098"	=>	{	#
 #					'reading'		=> 'I_DC_Voltage',
 #          'format'		=> '%.2f V',
@@ -246,12 +266,14 @@ my %SolarEdgeparseInfo = (
 #     "h40099"	=>	{	#
 #					'reading'		=> 'I_DC_Voltage_SF',
 #				},
-     "h40098" =>  {
-              'len' => '2',
+
+     "h40098" =>  {# 40099(Len 2) 40099 to 40100 DC Voltage
+              'len' => '2',# I_DC_Voltage, I_DC_Voltage_SF
           'reading' => 'Block_DC_Voltage',
            'unpack' => 'ns>',
              'expr' => 'ExprMppt($hash,$name,"I_DC_Voltage",$val[0],$val[1],0,0,0)',	# conversion of raw value to visible value
-                  },         
+                  },
+
 #     "h100"	=>	{	#
 #					'reading'		=> 'I_DC_Power',
 #          'format'		=> '%.2f W',
@@ -259,22 +281,23 @@ my %SolarEdgeparseInfo = (
 #     "h40101"	=>	{	#
 #					'reading'		=> 'I_DC_Power_SF',
 #				},
-     "h40100" =>  {
-              'len' => '2',
+
+     "h40100" =>  {# 400101(Len 2) 400101 to 40102 DC Power
+              'len' => '2',# I_DC_Power, I_DC_Power_SF
           'reading' => 'Block_DC_Power',
            'unpack' => 'ns>',
              'expr' => 'ExprMppt($hash,$name,"I_DC_Power",$val[0],$val[1],0,0,0)',	# conversion of raw value to visible value
-                  },         
-    "h40103"	=>	{	# 40104 1 I_Temp_Kühler int16 Grad Celsius Kühlkörpertemperatur
-					'reading'		=> 'I_Temp_Kuehler',			# name of the reading for this value
-          'format'		=> '%.f °C',					# format string for sprintf
-					'expr'	=> '$val/100',
+                  },
+    "h40103"	=>	{	# 40104 1 I_Temp_Sink int16 Grad Celsius Kühlkörpertemperatur
+					'reading'	=> 'I_Temp_HeatSink',	# name of the reading for this value
+          'format'	=> '%.f °C',					# format string for sprintf
+					'expr'	  => '$val/100',
           'setexpr'	=> '$val',
 				},
     "h40107"	=>	{	# 40108 1 I_Status uint16 Betriebszustand
 					'reading'	=> 'I_Status',			# name of the reading for this value
-					'expr'	=> '$val',
-          'map' => '1:Aus, 2:Nachtmodus, 4:WR_An',
+					'expr'	  => '$val',
+          'map'     => '1:Off, 2:Sleeping Night mode, 3:Grid Monitoring, 4:Inverter is ON and producing power, 5:Production(curtailed), 6:Shutting down, 7:Fault, 8:Maintenance',
           'setexpr'	=> '$val',
 				},
 
@@ -297,44 +320,46 @@ SolarEdge_Initialize($)
  #   $hash->{NotifyFn}   = "SolarEdge_Notify";
     $hash->{AttrFn}	 = "SolarEdge_Attr";
 	  $hash->{parseInfo}  = \%SolarEdgeparseInfo;			# defines registers for this Modbus Defive
-    $hash->{deviceInfo} = \%SolarEdgedeviceInfo;			# defines properties of the device like
+    $hash->{deviceInfo} = \%SolarEdgedeviceInfo;		# defines properties of the device like
 	  ModbusLD_Initialize($hash);							# Generic function of the Modbus module does the rest
 
 	  $hash->{AttrList} = $hash->{AttrList}
                             ."pv_energy pv_energytoday pv_energytoweek pv_energytomonth pv_energytoyear "
                             ."$readingFnAttributes"
                             . " " .		# Standard Attributes like IODEv etc
-		$hash->{ObjAttrList} . " " .						# Attributes to add or overwrite parseInfo definitions
-    $hash->{DevAttrList} . " " .                     # Attributes to add or overwrite devInfo definitions
-        "poll-.*"." ".										# overwrite poll with poll-ReadingName
-		    "polldelay-.*"." ".									# overwrite polldelay with polldelay-ReadingName
-		    "errorHandlingOf"." ";                                   # overwrite polldelay with polldelay-ReadingName
+                            
+		$hash->{ObjAttrList} . " " .	  	# Attributes to add or overwrite parseInfo definitions
+    $hash->{DevAttrList} . " " .      # Attributes to add or overwrite devInfo definitions
+        "poll-.*"." ".							  # overwrite poll with poll-ReadingName
+		    "polldelay-.*"." ".					  # overwrite polldelay with polldelay-ReadingName
+		    "errorHandlingOf"." ";        # overwrite polldelay with polldelay-ReadingName
 
 }
 
 ###################################
-sub ExprMppt($$$$$$$$)		{								# Berechnung Wert mit ScaleFactor unter Beachtung Operating_State
-#	Expr, conversion of raw value to visible value
-	my $hash			= $_[0];							# Übergabe Geräte-Hash
-	my $DevName			= $_[1];						# Übergabe Geräte-Name
-	my $ReadingName		= $_[2];
-  my @vval;
- $vval[0]			= $_[3];
- $vval[1]			= $_[4];
- $vval[2]			= $_[5];
- $vval[3]			= $_[6];
- $vval[4]			= $_[7];
+sub ExprMppt($$$$$$$$){ # Berechnung Wert mit ScaleFactor unter Beachtung Operating_State
 
-    # Register
-    my @SolarEdge_readings=("I_AC_Current","I_AC_Power","I_AC_VA","I_AC_VAR","I_AC_PF","I_AC_Energy_WH_kWh","I_DC_Current","I_DC_Voltage","I_DC_Power");
-    my ($Psec,$Pmin,$Phour,$Pmday,$Pmonth,$Pyear,$Pwday,$Pyday,$Pisdst) = localtime(time()+61);
-    my $Pyear2 = $Pyear+1900;
-    #my ($Psec,$Pmin,$Phour,$Pmday,$Pmonth,$Pyear,$Pwday,$Pyday,$Pisdst) = localtime(TimeNow());
-    my $time_now = TimeNow();
-    my $datum0 = substr($time_now,0,10);
- 
-    Log3 $hash, 4, "SolarEdge $DevName : ".$vval[0]." Reg :".$ReadingName;
-    my $WertNeu = @vval." ".$vval[0]." ".$vval[1]." ".$vval[2]." ".$vval[3]." ".$vval[4] ;
+  #	Expr, conversion of raw value to visible value
+	my $hash			  = $_[0];						# Übergabe Geräte-Hash
+	my $DevName			= $_[1];						# Übergabe Geräte-Name
+	my $ReadingName	= $_[2];
+  my @vval;
+  $vval[0]			= $_[3];
+  $vval[1]			= $_[4];
+  $vval[2]			= $_[5];
+  $vval[3]			= $_[6];
+  $vval[4]			= $_[7];
+
+  # Register
+  my @SolarEdge_readings=("I_AC_Current","I_AC_Power","I_AC_VA","I_AC_VAR","I_AC_PF","I_AC_Energy_WH_kWh","I_DC_Current","I_DC_Voltage","I_DC_Power");
+  my ($Psec,$Pmin,$Phour,$Pmday,$Pmonth,$Pyear,$Pwday,$Pyday,$Pisdst) = localtime(time()+61);
+  my $Pyear2 = $Pyear+1900;
+  #my ($Psec,$Pmin,$Phour,$Pmday,$Pmonth,$Pyear,$Pwday,$Pyday,$Pisdst) = localtime(TimeNow());
+  my $time_now = TimeNow();
+  my $datum0 = substr($time_now,0,10);
+
+  Log3 $hash, 4, "SolarEdge $DevName : ".$vval[0]." Reg :".$ReadingName;
+  my $WertNeu = @vval." ".$vval[0]." ".$vval[1]." ".$vval[2]." ".$vval[3]." ".$vval[4] ;
 
   if ($ReadingName eq "C_Model") {
         Log3 $hash, 4, "SolarEdge $DevName Model : ".$vval[0].":".$vval[1].":".$vval[2].":".$vval[3].":".$vval[4];
@@ -348,56 +373,61 @@ sub ExprMppt($$$$$$$$)		{								# Berechnung Wert mit ScaleFactor unter Beachtu
         readingsBulkUpdate($hash, $ReadingName."_SF", $vval[4]);
   } elsif ($ReadingName eq "I_AC_Power" || $ReadingName eq "I_DC_Power") {
         my $POWER =   ($vval[0] * 10 ** $vval[1]);
-         Log3 $hash, 4, "SolarEdge I_Power_0 : ".$vval[0]." POWER :".$POWER;
+        Log3 $hash, 4, "SolarEdge I_Power_0 : ".$vval[0]." POWER :".$POWER;
+
         if ($POWER < 0 || $POWER > 15000){
           $POWER = 0;
         }
-         Log3 $hash, 4, "SolarEdge I_Power_1 : ".$vval[0]." POWER :".$POWER;
+
+        Log3 $hash, 4, "SolarEdge I_Power_1 : ".$vval[0]." POWER :".$POWER;
         readingsBulkUpdate($hash, $ReadingName, $POWER);
         readingsBulkUpdate($hash, $ReadingName."_SF", $vval[1]);
-        
+
   } elsif ($ReadingName eq "I_AC_Energy_WH_kWh") {
         # Anfang I_AC_Energy_WH_kWh (Today, Week,...)
         my $energy_pv = ReadingsVal($DevName,$ReadingName,-1)*1000;
         my $ts_energy_today = ReadingsTimestamp($DevName,"pv_energytoday",0);
         # my ($Rsec,$Rmin,$Rhour,$Rmday,$Rmonth,$Ryear,$Rwday,$Ryday,$Risdst) = localtime($ts_energy_today);
         #  2018-10-29 15:33:00
-        my $Rmonth = substr($ts_energy_today,5,2); 
+        my $Rmonth = substr($ts_energy_today,5,2);
         my $energy_today = ReadingsVal($DevName,"pv_energytoday",0);
         my $datum1 = substr($ts_energy_today,0,10);
 
-        Log3 $hash, 4, "SolarEdge TimeStamp PV-Energie : $ts_energy_today : D1: $datum1 : $time_now :  $datum0 ";  
-        Log3 $hash, 4, "SolarEdge Jahr Monat PV-Energie: $Rmonth : "."PV_".($Pyear2)."_".($Pmonth+1)." ----";      
-        
+        Log3 $hash, 4, "SolarEdge TimeStamp PV-Energie : $ts_energy_today : D1: $datum1 : $time_now :  $datum0 ";
+        Log3 $hash, 4, "SolarEdge Jahr Monat PV-Energie: $Rmonth : "."PV_".($Pyear2)."_".($Pmonth+1)." ----";
+
         my $energy_time =   $vval[0] * 10 ** $vval[1];
         if ($energy_pv <= 0){
-          readingsBulkUpdate($hash, "pv_energytoday", "0"); 
+          readingsBulkUpdate($hash, "pv_energytoday", "0");
         }else{
-           if ($datum0 eq $datum1 ){ # Prüfung gleicher Tag
-              readingsBulkUpdate($hash, "pv_energytoday", $energy_today + ($energy_time - $energy_pv) );         
+          if ($datum0 eq $datum1 ){ # Prüfung gleicher Tag
+            readingsBulkUpdate($hash, "pv_energytoday", $energy_today + ($energy_time - $energy_pv) );
           } else {
-              my $e_week = ReadingsVal($DevName,"pv_energytoweek",0);
-              readingsBulkUpdate($hash, "pv_energytoweek", $e_week +$energy_today);  
-              if ( ($Pmonth+1) eq $Rmonth){  # Prüfung gleicher Monat
-                   my $e_month = ReadingsVal($DevName,"pv_energymonth",0);
-                  readingsBulkUpdate($hash, "pv_energymonth",$e_month + $energy_today);
-              } else {
-                   my $e_month = ReadingsVal($DevName,"pv_energymonth",0);
-                  readingsBulkUpdate($hash,"PV_".($Pyear2)."_".($Pmonth),$e_month);                   
-                  readingsBulkUpdate($hash, "pv_energymonth","0");              
-              }
-              readingsBulkUpdate($hash, "pv_energytoday", "0");        
+            my $e_week = ReadingsVal($DevName,"pv_energytoweek",0);
+            readingsBulkUpdate($hash, "pv_energytoweek", $e_week +$energy_today);
+
+            if ( ($Pmonth+1) eq $Rmonth){  # Prüfung gleicher Monat
+                 my $e_month = ReadingsVal($DevName,"pv_energymonth",0);
+                readingsBulkUpdate($hash, "pv_energymonth",$e_month + $energy_today);
+            } else {
+                 my $e_month = ReadingsVal($DevName,"pv_energymonth",0);
+                readingsBulkUpdate($hash,"PV_".($Pyear2)."_".($Pmonth),$e_month);
+                readingsBulkUpdate($hash, "pv_energymonth","0");
+            }
+
+            readingsBulkUpdate($hash, "pv_energytoday", "0");
          }
       }
-        readingsBulkUpdate($hash, $ReadingName, $energy_time / 1000) ;
-        readingsBulkUpdate($hash, $ReadingName."_SF", $vval[1]);
-      
-        Log3 $hash, 4, "SolarEdge PV-Energie : $energy_today :  $energy_time : $energy_pv  ";
+
+      readingsBulkUpdate($hash, $ReadingName, $energy_time / 1000) ;
+      readingsBulkUpdate($hash, $ReadingName."_SF", $vval[1]);
+      Log3 $hash, 4, "SolarEdge PV-Energie : $energy_today :  $energy_time : $energy_pv  ";
         # Ende  I_AC_Energy_WH_kWh (Today, Week,...)
+
   }else{
       readingsBulkUpdate($hash, $ReadingName, $vval[0] * 10 ** $vval[1]);
       readingsBulkUpdate($hash, $ReadingName."_SF", $vval[1]);
-  } 
+  }
 
 	Log3 $hash, 4, "SolarEdge $DevName : ".$WertNeu;
 	return $WertNeu;
@@ -458,7 +488,7 @@ sub ExprMppt($$$$$$$$)		{								# Berechnung Wert mit ScaleFactor unter Beachtu
     <b>Get-Commands</b><br>
     <ul>
         All readings are also available as Get commands. Internally a Get command triggers the corresponding
-        request to the device and then interprets the data and returns the right field value. 
+        request to the device and then interprets the data and returns the right field value.
     </ul>
 	<br>
     <a name="SolarEdgeattr"></a>
