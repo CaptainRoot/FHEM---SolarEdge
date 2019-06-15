@@ -362,7 +362,7 @@ my %SolarEdgeMeter1parseInfo = (
     "h40190" => {                                  # 40190 (Len 5) 40190 to 40194
         'len'     => '5',                            #M_AC_Current, M_AC_Current_A(L1), M_AC_Current_B(L2), M_AC_Current_C(L3), M_AC_Current_SF
         'reading' => 'X_Meter_1_Block_AC_Current',
-        'unpack'  => 'sssss>',
+        'unpack'  => 's>s>s>s>s>',
         'expr' => 'ExprMeter($hash,$name,"X_Meter_1_M_AC_Current",$val[0],$val[1],$val[2],$val[3],$val[4],0,0,0,0)'
         ,                                            # conversion of raw value to visible value
     },
@@ -404,7 +404,7 @@ my %SolarEdgeMeter1parseInfo = (
     "h40206" => {                                                                                          #Real Power 40206 (Len 5) 40206 to 40210
         'len'     => '5',                          #M_AC_Power, M_AC_Power_A, M_AC_Power_B, M_AC_Power_C, M_AC_Power_SF,
         'reading' => 'X_Meter_1_Block_AC_Power',
-        'unpack'  => 'sssss>',
+        'unpack'  => 's>s>s>s>s>',
         'expr' =>
           'ExprMeter($hash,$name,"X_Meter_1_M_AC_Power",$val[0],$val[1],$val[2],$val[3],$val[4],0,0,0,0)',  # conversion of raw value to visible value
     },
@@ -412,21 +412,21 @@ my %SolarEdgeMeter1parseInfo = (
     "h40211" => {    #Apparent Power 40211 (Len 5) 40211 to 40215
         'len'     => '5',                       #M_AC_VA, M_AC_VA_A, M_AC_VA_B, M_AC_VA_C, M_AC_VA_SF,
         'reading' => 'X_Meter_1_Block_AC_VA',
-        'unpack'  => 'sssss>',
+        'unpack'  => 's>s>s>s>s>',
         'expr' =>
           'ExprMeter($hash,$name,"X_Meter_1_M_AC_VA",$val[0],$val[1],$val[2],$val[3],$val[4],0,0,0,0)',    # conversion of raw value to visible value
     },
     "h40216" => {    #Reactive Power 40216 (Len 5) 40211 to 40220
         'len'     => '5',                        #M_AC_VAR, M_AC_VAR_A, M_AC_VAR_B, M_AC_VAR_C, M_AC_VAR_SF,
         'reading' => 'X_Meter_1_Block_AC_VAR',
-        'unpack'  => 'sssss>',
+        'unpack'  => 's>s>s>s>s>',
         'expr' =>
           'ExprMeter($hash,$name,"X_Meter_1_M_AC_VAR",$val[0],$val[1],$val[2],$val[3],$val[4],0,0,0,0)',    # conversion of raw value to visible value
     },
     "h40221" => {                                                                                           #Power Factor 40221 (Len 5) 40211 to 40225
         'len'     => '5',                       #M_AC_PF, M_AC_PF_A, M_AC_PF_B, M_AC_PF_C, M_AC_PF_SF,
         'reading' => 'X_Meter_1_Block_AC_PF',
-        'unpack'  => 'sssss>',
+        'unpack'  => 's>s>s>s>s>',
         'expr' =>
           'ExprMeter($hash,$name,"X_Meter_1_M_AC_PF",$val[0],$val[1],$val[2],$val[3],$val[4],0,0,0,0)',    # conversion of raw value to visible value
     },
