@@ -603,7 +603,7 @@ sub ExprMppt($$$$$$$$)
     {
         my $powerInverter = ReadingsVal( $DevName, "I_AC_Power", -1 );
         my $powerGrid     = ReadingsVal( $DevName, "X_Meter_1_M_AC_Power", -1);
-        my consumption = $powerGrid + $powerInverter;
+        my $consumption = $powerGrid + $powerInverter;
 
         if ($powerGrid >= 0)
         {
@@ -616,7 +616,7 @@ sub ExprMppt($$$$$$$$)
           $consumption =  $powerInverter + ($powerGrid * (-1));
         }
 
-        readingsBulkUpdate( $hash, "X_Calculated_Consumption", $consumption );        
+        readingsBulkUpdate( $hash, "X_Calculated_Consumption", $consumption );
     }
 
     Log3 $hash, 4, "SolarEdge $DevName : " . $WertNeu;
@@ -722,7 +722,7 @@ sub ExprMeter($$$$$$$$$$$$)
     {
         my $powerInverter = ReadingsVal( $DevName, "I_AC_Power", -1 );
         my $powerGrid     = ReadingsVal( $DevName, "X_Meter_1_M_AC_Power", -1);
-        my consumption = $powerGrid + $powerInverter;
+        my $consumption = $powerGrid + $powerInverter;
 
         if ($powerGrid >= 0)
         {
