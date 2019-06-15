@@ -599,6 +599,26 @@ sub ExprMppt($$$$$$$$)
         readingsBulkUpdate( $hash, $ReadingName . "_SF", $vval[1] );
     }
 
+    if($ReadingName eq "I_AC_Power")
+    {
+        my $powerInverter = ReadingsVal( $DevName, "I_AC_Power", -1 );
+        my $powerGrid     = ReadingsVal( $DevName, "X_Meter_1_M_AC_Power", -1);
+        my consumption = $powerGrid + $powerInverter;
+
+        if ($powerGrid >= 0)
+        {
+          #Einspeisung Verbrauch = Inverterleistung  - Einspeisung
+          $consumption =  $powerInverter - $powerGrid;
+        }
+        elsif ($powerGrid < 0)
+        {
+          #Zukauf Inverterleistung + Zukauf
+          $consumption =  $powerInverter + ($powerGrid * (-1));
+        }
+
+        readingsBulkUpdate( $hash, "X_Calculated_Consumption", $consumption );        
+    }
+
     Log3 $hash, 4, "SolarEdge $DevName : " . $WertNeu;
     return $WertNeu;
 }
@@ -696,6 +716,26 @@ sub ExprMeter($$$$$$$$$$$$)
     {
         readingsBulkUpdate( $hash, $ReadingName,         $vval[0] * 10**$vval[1] );
         readingsBulkUpdate( $hash, $ReadingName . "_SF", $vval[1] );
+    }
+
+    if($ReadingName eq "X_Meter_1_M_AC_Power")
+    {
+        my $powerInverter = ReadingsVal( $DevName, "I_AC_Power", -1 );
+        my $powerGrid     = ReadingsVal( $DevName, "X_Meter_1_M_AC_Power", -1);
+        my consumption = $powerGrid + $powerInverter;
+
+        if ($powerGrid >= 0)
+        {
+          #Einspeisung Verbrauch = Inverterleistung  - Einspeisung
+          $consumption =  $powerInverter - $powerGrid;
+        }
+        elsif ($powerGrid < 0)
+        {
+          #Zukauf Inverterleistung + Zukauf
+          $consumption =  $powerInverter + ($powerGrid * (-1));
+        }
+
+        readingsBulkUpdate( $hash, "X_Calculated_Consumption", $consumption );
     }
 
     Log3 $hash, 4, "SolarEdge $DevName : " . $WertNeu;
