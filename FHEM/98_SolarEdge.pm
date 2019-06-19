@@ -23,7 +23,7 @@
 #	Changelog:
 #	2015-04-16	Vorlage 98_ModbusSDM220M.pm / 98_Pluggit.pm
 # 2018-10-15  weiter ... pejonp
-# 2018-10-29  pv_energy pv_energytoday pv_energytoweek pv_energytomont ...
+# 2018-10-29  X_Calculated_PV_Energy X_Calculated_PV_EnergyToday X_Calculated_PV_EnergyCurrentWeek pv_energytomont ...
 
 #defmod SEdge SolarEdge 3 60 192.168.2.7:20108 RTU
 
@@ -253,7 +253,7 @@ my %SolarEdgeparseInfo = (
         'len'     => '3',                                                                   #I_AC_Energy_WH (2), I_AC_Energy_WH_SF
         'reading' => 'Block_AC_Energy_WH',
         'unpack'  => 'l>s>',
-        'expr'    => 'ExprMppt($hash,$name,"I_AC_Energy_WH_kWh",$val[0],$val[1],0,0,0)',    # conversion of raw value to visible value
+        'expr'    => 'ExprMppt($hash,$name,"I_AC_Energy_WH",$val[0],$val[1],0,0,0)',    # conversion of raw value to visible value
     },
 
     #     "h40096"	=>	{	#
@@ -470,7 +470,7 @@ sub SolarEdge_Initialize($)
 
     $hash->{AttrList} =
         $hash->{AttrList}
-      . "pv_energy pv_energytoday pv_energytoweek pv_energytomonth X_Calculated_Consumption"
+      . "X_Calculated_PV_Energy X_Calculated_PV_EnergyToday X_Calculated_PV_EnergyCurrentWeek pv_energytomonth X_Calculated_Consumption"
       . "$readingFnAttributes" . " "
       .                                               # Standard Attributes like IODEv etc
       $hash->{ObjAttrList} . " " .                    # Attributes to add or overwrite parseInfo definitions
@@ -498,13 +498,9 @@ sub ExprMppt($$$$$$$$)
 
     # Register
     my @SolarEdge_readings =
-      ( "I_AC_Current", "I_AC_Power", "I_AC_VA", "I_AC_VAR", "I_AC_PF", "I_AC_Energy_WH_kWh", "I_DC_Current", "I_DC_Voltage", "I_DC_Power" );
+      ( "I_AC_Current", "I_AC_Power", "I_AC_VA", "I_AC_VAR", "I_AC_PF", "I_AC_Energy_WH", "I_DC_Current", "I_DC_Voltage", "I_DC_Power" );
     my ( $Psec, $Pmin, $Phour, $Pmday, $Pmonth, $Pyear, $Pwday, $Pyday, $Pisdst ) = localtime( time() + 61 );
     my $Pyear2 = $Pyear + 1900;
-
-    #my ($Psec,$Pmin,$Phour,$Pmday,$Pmonth,$Pyear,$Pwday,$Pyday,$Pisdst) = localtime(TimeNow());
-    my $time_now = TimeNow();
-    my $datum0   = substr( $time_now, 0, 10 );
 
     Log3 $hash, 4, "SolarEdge $DevName : " . $vval[0] . " Reg :" . $ReadingName;
     my $WertNeu = @vval . " " . $vval[0] . " " . $vval[1] . " " . $vval[2] . " " . $vval[3] . " " . $vval[4];
@@ -538,59 +534,72 @@ sub ExprMppt($$$$$$$$)
         readingsBulkUpdate( $hash, $ReadingName . "_SF", $vval[1] );
 
     }
-    elsif ( $ReadingName eq "I_AC_Energy_WH_kWh" )
+    elsif ( $ReadingName eq "I_AC_Energy_WH" )
     {
         # Anfang I_AC_Energy_WH_kWh (Today, Week,...)
-        my $energy_pv       = ReadingsVal( $DevName, $ReadingName, -1 ) * 1000;
-        my $ts_energy_today = ReadingsTimestamp( $DevName, "pv_energytoday", 0 );
-
-        # my ($Rsec,$Rmin,$Rhour,$Rmday,$Rmonth,$Ryear,$Rwday,$Ryday,$Risdst) = localtime($ts_energy_today);
-        #  2018-10-29 15:33:00
-        my $Rmonth       = substr( $ts_energy_today, 5, 2 );
-        my $energy_today = ReadingsVal( $DevName, "pv_energytoday", 0 );
-        my $datum1       = substr( $ts_energy_today, 0, 10 );
-
-        Log3 $hash, 4, "SolarEdge TimeStamp PV-Energie : $ts_energy_today : D1: $datum1 : $time_now :  $datum0 ";
-        Log3 $hash, 4, "SolarEdge Jahr Monat PV-Energie: $Rmonth : " . "PV_" . ($Pyear2) . "_" . ( $Pmonth + 1 ) . " ----";
-
+        my $energy_pv       = ReadingsVal( $DevName, "X_Calculated_PV_Energy", -1 );
         my $energy_time = $vval[0] * 10**$vval[1];
 
         if ( $energy_pv <= 0 )
         {
-            readingsBulkUpdate( $hash, "pv_energytoday", "0" );
+
+            readingsBulkUpdate( $hash, "X_Calculated_PV_EnergyToday", "0" );
         }
         else
         {
-            if ( $datum0 eq $datum1 )
-            {    # Prüfung gleicher Tag
-                readingsBulkUpdate( $hash, "pv_energytoday", $energy_today + ( $energy_time - $energy_pv ) );
+            my $ts_energy_today = ReadingsTimestamp( $DevName, "X_Calculated_PV_EnergyToday", 0 );
+            my $energy_today    = ReadingsVal( $DevName, "X_Calculated_PV_EnergyToday", 0 );
+
+            my $time_now = TimeNow();
+            my $date_now  = substr( $time_now, 0, 10 );
+
+            my $reading_month = substr( $ts_energy_today, 5, 2 );
+            my $reading_date  = substr( $ts_energy_today, 0, 10 );
+
+            Log3 $hash, 4, "SolarEdge TimeStamp PV-Energie: $ts_energy_today : D1: $reading_date : $time_now :  $date_now ";
+            Log3 $hash, 4, "SolarEdge Jahr Monat PV-Energie: $reading_month : " . "PV_" . ($Pyear2) . "_" . ( $Pmonth + 1 ) . " ----";
+
+            if ( $date_now eq $reading_date )
+            {
+                # Prüfung gleicher Tag
+                #Same Day
+                readingsBulkUpdate( $hash, "X_Calculated_PV_EnergyToday", $energy_today + ( $energy_time - $energy_pv ) );
             }
             else
             {
-                my $e_week = ReadingsVal( $DevName, "pv_energytoweek", 0 );
-                readingsBulkUpdate( $hash, "pv_energytoweek", $e_week + $energy_today );
+                #Next Day
+                my $energy_week = ReadingsVal( $DevName, "X_Calculated_PV_EnergyCurrentWeek", 0 );
 
-                if ( ( $Pmonth + 1 ) eq $Rmonth )
-                {    # Prüfung gleicher Monat
-                    my $e_month = ReadingsVal( $DevName, "pv_energymonth", 0 );
-                    readingsBulkUpdate( $hash, "pv_energymonth", $e_month + $energy_today );
+                readingsBulkUpdate( $hash, "X_Calculated_PV_EnergyCurrentWeek", $energy_week + $energy_today );
+
+                if ( ( $Pmonth + 1 ) eq $reading_month )
+                {
+                    # Prüfung gleicher Monat
+                    #Same Month
+                    my $energy_month = ReadingsVal( $DevName, "X_Calculated_PV_EnergyCurrentMonth", 0 );
+
+                    readingsBulkUpdate( $hash, "X_Calculated_PV_EnergyCurrentMonth", $energy_month + $energy_today );
                 }
                 else
                 {
-                    my $e_month = ReadingsVal( $DevName, "pv_energymonth", 0 );
-                    readingsBulkUpdate( $hash, "PV_" . ($Pyear2) . "_" . ($Pmonth), $e_month );
-                    readingsBulkUpdate( $hash, "pv_energymonth", "0" );
+                    # Next Month
+                    my $energy_month = ReadingsVal( $DevName, "X_Calculated_PV_EnergyCurrentMonth", 0 );
+
+                    readingsBulkUpdate( $hash, "PV_" . ($Pyear2) . "_" . ($Pmonth), $energy_month );
+                    readingsBulkUpdate( $hash, "X_Calculated_PV_EnergyCurrentMonth", "0" );
                 }
 
-                readingsBulkUpdate( $hash, "pv_energytoday", "0" );
-            }
+                # New Day start at 0 again
+                readingsBulkUpdate( $hash, "X_Calculated_PV_EnergyToday", "0" );
+
+                Log3 $hash, 4, "SolarEdge PV-Energie: $energy_today :  $energy_time : $energy_pv  ";
+          }
         }
 
-        readingsBulkUpdate( $hash, $ReadingName,         $energy_time / 1000 );
+        readingsBulkUpdate( $hash, $ReadingName,       ($vval[0] * 10**$vval[1]));
+        readingsBulkUpdate( $hash, "X_Calculated_PV_Energy",        ($vval[0] * 10**$vval[1]));
         readingsBulkUpdate( $hash, $ReadingName . "_SF", $vval[1] );
-        Log3 $hash, 4, "SolarEdge PV-Energie : $energy_today :  $energy_time : $energy_pv  ";
-
-        # Ende  I_AC_Energy_WH_kWh (Today, Week,...)
+              # Ende  I_AC_Energy_WH_kWh (Today, Week,...)
 
     }
     else
@@ -633,7 +642,7 @@ sub ExprMeter($$$$$$$$$$$$)
 
     #my ($Psec,$Pmin,$Phour,$Pmday,$Pmonth,$Pyear,$Pwday,$Pyday,$Pisdst) = localtime(TimeNow());
     my $time_now = TimeNow();
-    my $datum0   = substr( $time_now, 0, 10 );
+    my $date_now  = substr( $time_now, 0, 10 );
 
     Log3 $hash, 4, "SolarEdge $DevName : " . $vval[0] . " Reg :" . $ReadingName;
     my $WertNeu =
@@ -792,9 +801,9 @@ sub HelperConsumption($$)
 	    <li><a href="#do_not_notify">do_not_notify</a></li>
       <li><a href="#readingFnAttributes">readingFnAttributes</a></li>
         <br>
-		  <li><b>pv_energy</b></li>
-		  <li><b>pv_energytoday</b></li>
-      <li><b>pv_energytoweek</b></li>
+		  <li><b>X_Calculated_PV_Energy</b></li>
+		  <li><b>X_Calculated_PV_EnergyToday</b></li>
+      <li><b>X_Calculated_PV_EnergyCurrentWeek</b></li>
 		  <li><b>pv_energytomonth</b></li>
       <li><b>X_Calculated_Consumption</b> current power consumption (photovoltaik and / or grid)</li>
     </ul>
