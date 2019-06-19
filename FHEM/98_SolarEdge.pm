@@ -23,7 +23,7 @@
 #	Changelog:
 #	2015-04-16	Vorlage 98_ModbusSDM220M.pm / 98_Pluggit.pm
 # 2018-10-15  weiter ... pejonp
-# 2018-10-29  X_Calculated_PV_Energy X_Calculated_PV_EnergyToday X_Calculated_PV_EnergyCurrentWeek pv_energytomont ...
+# 2018-10-29  X_PV_Energy X_PV_EnergyToday X_PV_EnergyCurrentWeek pv_energytomont ...
 
 #defmod SEdge SolarEdge 3 60 192.168.2.7:20108 RTU
 
@@ -250,7 +250,7 @@ my %SolarEdgeparseInfo = (
     #				},
 
     "h40093" => {    # 40094 (Len 3) 40094 to 40096 AC Lifetime Energy production
-        'len'     => '3',                                                                   #I_AC_Energy_WH (2), I_AC_Energy_WH_SF
+        'len'     => '3',                                                               #I_AC_Energy_WH (2), I_AC_Energy_WH_SF
         'reading' => 'Block_AC_Energy_WH',
         'unpack'  => 'l>s>',
         'expr'    => 'ExprMppt($hash,$name,"I_AC_Energy_WH",$val[0],$val[1],0,0,0)',    # conversion of raw value to visible value
@@ -470,7 +470,7 @@ sub SolarEdge_Initialize($)
 
     $hash->{AttrList} =
         $hash->{AttrList}
-      . "X_Calculated_PV_Energy X_Calculated_PV_EnergyToday X_Calculated_PV_EnergyCurrentWeek pv_energytomonth X_Calculated_Consumption"
+      . "X_PV_Energy X_PV_EnergyToday X_PV_EnergyCurrentWeek pv_energytomonth X_Calculated_Consumption"
       . "$readingFnAttributes" . " "
       .                                               # Standard Attributes like IODEv etc
       $hash->{ObjAttrList} . " " .                    # Attributes to add or overwrite parseInfo definitions
@@ -537,21 +537,21 @@ sub ExprMppt($$$$$$$$)
     elsif ( $ReadingName eq "I_AC_Energy_WH" )
     {
         # Anfang I_AC_Energy_WH_kWh (Today, Week,...)
-        my $energy_pv       = ReadingsVal( $DevName, "X_Calculated_PV_Energy", -1 );
+        my $energy_pv   = ReadingsVal( $DevName, "X_PV_Energy", -1 );
         my $energy_time = $vval[0] * 10**$vval[1];
 
         if ( $energy_pv <= 0 )
         {
 
-            readingsBulkUpdate( $hash, "X_Calculated_PV_EnergyToday", "0" );
+            readingsBulkUpdate( $hash, "X_PV_EnergyToday", "0" );
         }
         else
         {
-            my $ts_energy_today = ReadingsTimestamp( $DevName, "X_Calculated_PV_EnergyToday", 0 );
-            my $energy_today    = ReadingsVal( $DevName, "X_Calculated_PV_EnergyToday", 0 );
+            my $ts_energy_today = ReadingsTimestamp( $DevName, "X_PV_EnergyToday", 0 );
+            my $energy_today    = ReadingsVal( $DevName, "X_PV_EnergyToday", 0 );
 
             my $time_now = TimeNow();
-            my $date_now  = substr( $time_now, 0, 10 );
+            my $date_now = substr( $time_now, 0, 10 );
 
             my $reading_month = substr( $ts_energy_today, 5, 2 );
             my $reading_date  = substr( $ts_energy_today, 0, 10 );
@@ -563,44 +563,44 @@ sub ExprMppt($$$$$$$$)
             {
                 # Prüfung gleicher Tag
                 #Same Day
-                readingsBulkUpdate( $hash, "X_Calculated_PV_EnergyToday", $energy_today + ( $energy_time - $energy_pv ) );
+                readingsBulkUpdate( $hash, "X_PV_EnergyToday", $energy_today + ( $energy_time - $energy_pv ) );
             }
             else
             {
                 #Next Day
-                my $energy_week = ReadingsVal( $DevName, "X_Calculated_PV_EnergyCurrentWeek", 0 );
+                my $energy_week = ReadingsVal( $DevName, "X_PV_EnergyCurrentWeek", 0 );
 
-                readingsBulkUpdate( $hash, "X_Calculated_PV_EnergyCurrentWeek", $energy_week + $energy_today );
+                readingsBulkUpdate( $hash, "X_PV_EnergyCurrentWeek", $energy_week + $energy_today );
 
                 if ( ( $Pmonth + 1 ) eq $reading_month )
                 {
                     # Prüfung gleicher Monat
                     #Same Month
-                    my $energy_month = ReadingsVal( $DevName, "X_Calculated_PV_EnergyCurrentMonth", 0 );
+                    my $energy_month = ReadingsVal( $DevName, "X_PV_EnergyCurrentMonth", 0 );
 
-                    readingsBulkUpdate( $hash, "X_Calculated_PV_EnergyCurrentMonth", $energy_month + $energy_today );
+                    readingsBulkUpdate( $hash, "X_PV_EnergyCurrentMonth", $energy_month + $energy_today );
                 }
                 else
                 {
                     # Next Month
-                    my $energy_month = ReadingsVal( $DevName, "X_Calculated_PV_EnergyCurrentMonth", 0 );
+                    my $energy_month = ReadingsVal( $DevName, "X_PV_EnergyCurrentMonth", 0 );
 
                     readingsBulkUpdate( $hash, "PV_" . ($Pyear2) . "_" . ($Pmonth), $energy_month );
-                    readingsBulkUpdate( $hash, "X_Calculated_PV_EnergyCurrentMonth", "0" );
+                    readingsBulkUpdate( $hash, "X_PV_EnergyCurrentMonth",           "0" );
                 }
 
                 # New Day start at 0 again
-                readingsBulkUpdate( $hash, "X_Calculated_PV_EnergyToday", "0" );
+                readingsBulkUpdate( $hash, "X_PV_EnergyToday", "0" );
 
                 Log3 $hash, 4, "SolarEdge PV-Energie: $energy_today :  $energy_time : $energy_pv  ";
-          }
+            }
         }
 
-        readingsBulkUpdate( $hash, $ReadingName,       ($vval[0] * 10**$vval[1]));
-        readingsBulkUpdate( $hash, "X_Calculated_PV_Energy",        ($vval[0] * 10**$vval[1]));
+        readingsBulkUpdate( $hash, $ReadingName,         $vval[0] * 10**$vval[1]  );
+        readingsBulkUpdate( $hash, "X_PV_Energy",        $vval[0] * 10**$vval[1]  );
         readingsBulkUpdate( $hash, $ReadingName . "_SF", $vval[1] );
-              # Ende  I_AC_Energy_WH_kWh (Today, Week,...)
 
+        # Ende  I_AC_Energy_WH_kWh (Today, Week,...
     }
     else
     {
@@ -642,7 +642,7 @@ sub ExprMeter($$$$$$$$$$$$)
 
     #my ($Psec,$Pmin,$Phour,$Pmday,$Pmonth,$Pyear,$Pwday,$Pyday,$Pisdst) = localtime(TimeNow());
     my $time_now = TimeNow();
-    my $date_now  = substr( $time_now, 0, 10 );
+    my $date_now = substr( $time_now, 0, 10 );
 
     Log3 $hash, 4, "SolarEdge $DevName : " . $vval[0] . " Reg :" . $ReadingName;
     my $WertNeu =
@@ -801,9 +801,9 @@ sub HelperConsumption($$)
 	    <li><a href="#do_not_notify">do_not_notify</a></li>
       <li><a href="#readingFnAttributes">readingFnAttributes</a></li>
         <br>
-		  <li><b>X_Calculated_PV_Energy</b></li>
-		  <li><b>X_Calculated_PV_EnergyToday</b></li>
-      <li><b>X_Calculated_PV_EnergyCurrentWeek</b></li>
+		  <li><b>X_PV_Energy</b></li>
+		  <li><b>X_PV_EnergyToday</b></li>
+      <li><b>X_PV_EnergyCurrentWeek</b></li>
 		  <li><b>pv_energytomonth</b></li>
       <li><b>X_Calculated_Consumption</b> current power consumption (photovoltaik and / or grid)</li>
     </ul>
