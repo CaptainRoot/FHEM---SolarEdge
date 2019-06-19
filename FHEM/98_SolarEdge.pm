@@ -470,10 +470,9 @@ sub SolarEdge_Initialize($)
 
     $hash->{AttrList} =
         $hash->{AttrList}
-      . "pv_energy pv_energytoday pv_energytoweek pv_energytomonth pv_energytoyear "
+      . "pv_energy pv_energytoday pv_energytoweek pv_energytomonth X_Calculated_Consumption"
       . "$readingFnAttributes" . " "
       .                                               # Standard Attributes like IODEv etc
-
       $hash->{ObjAttrList} . " " .                    # Attributes to add or overwrite parseInfo definitions
       $hash->{DevAttrList} . " " .                    # Attributes to add or overwrite devInfo definitions
       "poll-.*" . " " .                               # overwrite poll with poll-ReadingName
@@ -555,6 +554,7 @@ sub ExprMppt($$$$$$$$)
         Log3 $hash, 4, "SolarEdge Jahr Monat PV-Energie: $Rmonth : " . "PV_" . ($Pyear2) . "_" . ( $Pmonth + 1 ) . " ----";
 
         my $energy_time = $vval[0] * 10**$vval[1];
+
         if ( $energy_pv <= 0 )
         {
             readingsBulkUpdate( $hash, "pv_energytoday", "0" );
@@ -599,24 +599,9 @@ sub ExprMppt($$$$$$$$)
         readingsBulkUpdate( $hash, $ReadingName . "_SF", $vval[1] );
     }
 
-    if($ReadingName eq "I_AC_Power")
+    if ( $ReadingName eq "I_AC_Power" )
     {
-        my $powerInverter = ReadingsVal( $DevName, "I_AC_Power", -1 );
-        my $powerGrid     = ReadingsVal( $DevName, "X_Meter_1_M_AC_Power", -1);
-        my $consumption = $powerGrid + $powerInverter;
-
-        if ($powerGrid >= 0)
-        {
-          #Einspeisung Verbrauch = Inverterleistung  - Einspeisung
-          $consumption =  $powerInverter - $powerGrid;
-        }
-        elsif ($powerGrid < 0)
-        {
-          #Zukauf Inverterleistung + Zukauf
-          $consumption =  $powerInverter + ($powerGrid * (-1));
-        }
-
-        readingsBulkUpdate( $hash, "X_Calculated_Consumption", $consumption );
+        HelperConsumption( $hash, $DevName );
     }
 
     Log3 $hash, 4, "SolarEdge $DevName : " . $WertNeu;
@@ -718,28 +703,29 @@ sub ExprMeter($$$$$$$$$$$$)
         readingsBulkUpdate( $hash, $ReadingName . "_SF", $vval[1] );
     }
 
-    if($ReadingName eq "X_Meter_1_M_AC_Power")
+    if ( $ReadingName eq "X_Meter_1_M_AC_Power" )
     {
-        my $powerInverter = ReadingsVal( $DevName, "I_AC_Power", -1 );
-        my $powerGrid     = ReadingsVal( $DevName, "X_Meter_1_M_AC_Power", -1);
-        my $consumption = $powerGrid + $powerInverter;
-
-        if ($powerGrid >= 0)
-        {
-          #Einspeisung Verbrauch = Inverterleistung  - Einspeisung
-          $consumption =  $powerInverter - $powerGrid;
-        }
-        elsif ($powerGrid < 0)
-        {
-          #Zukauf Inverterleistung + Zukauf
-          $consumption =  $powerInverter + ($powerGrid * (-1));
-        }
-
-        readingsBulkUpdate( $hash, "X_Calculated_Consumption", $consumption );
+        HelperConsumption( $hash, $DevName );
     }
 
     Log3 $hash, 4, "SolarEdge $DevName : " . $WertNeu;
     return $WertNeu;
+}
+
+sub HelperConsumption($$)
+{
+    my $hash    = $_[0];    # Übergabe Geräte-Hash
+    my $DevName = $_[1];    # Übergabe Geräte-Name
+
+    my $powerInverter = ReadingsVal( $DevName, "I_AC_Power",           -1 );
+    my $powerGrid     = ReadingsVal( $DevName, "X_Meter_1_M_AC_Power", -1 );
+    my $consumption   = $powerGrid + $powerInverter;
+
+    # Power from grid is negativ (1 - (-1) ) = 2
+    $consumption = $powerInverter - $powerGrid;
+
+    readingsBulkUpdate( $hash, "X_Calculated_Consumption", $consumption );
+
 }
 
 1;
@@ -810,7 +796,7 @@ sub ExprMeter($$$$$$$$$$$$)
 		  <li><b>pv_energytoday</b></li>
       <li><b>pv_energytoweek</b></li>
 		  <li><b>pv_energytomonth</b></li>
-      <li><b>pv_energytoyear</b></li>
+      <li><b>X_Calculated_Consumption</b> current power consumption (photovoltaik and / or grid)</li>
     </ul>
     <br>
 </ul>
