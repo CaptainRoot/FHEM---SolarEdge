@@ -1,4 +1,4 @@
-##############################################
+ImportedImportedImportedImported##############################################
 # $Id: 98_SolarEdge.pm 0020 2019-06-10 17:00:00Z CaptainRoot $
 #
 #	fhem Modul für Wechselrichter SolarEdge SE5K
@@ -470,7 +470,7 @@ sub SolarEdge_Initialize($)
 
     $hash->{AttrList} =
         $hash->{AttrList}
-      . "X_PV_Energy X_PV_EnergyToday X_PV_EnergyCurrentWeek pv_energytomonth X_Calculated_Consumption"
+      . "X_PV_Energy X_PV_EnergyToday X_PV_EnergyCurrentWeek X_PV_EnergyCurrentMonth X_Calculated_Consumption X_M_ExportedToday X_M_ExportedCurrentWeek X_M_ExportedCurrentMonth X_M_ImportedToday X_M_ImportedCurrentWeek X_M_ImportedCurrentMonth"
       . "$readingFnAttributes" . " "
       .                                               # Standard Attributes like IODEv etc
       $hash->{ObjAttrList} . " " .                    # Attributes to add or overwrite parseInfo definitions
@@ -536,7 +536,7 @@ sub ExprMppt($$$$$$$$)
     }
     elsif ( $ReadingName eq "I_AC_Energy_WH" )
     {
-        # Anfang I_AC_Energy_WH_kWh (Today, Week,...)
+        # Anfang I_AC_Energy_WH (Today, Week,...)
         my $energy_pv   = ReadingsVal( $DevName, "X_PV_Energy", -1 );
         my $energy_time = $vval[0] * 10**$vval[1];
 
@@ -600,7 +600,7 @@ sub ExprMppt($$$$$$$$)
         readingsBulkUpdate( $hash, "X_PV_Energy",        $vval[0] * 10**$vval[1]  );
         readingsBulkUpdate( $hash, $ReadingName . "_SF", $vval[1] );
 
-        # Ende  I_AC_Energy_WH_kWh (Today, Week,...
+        # Ende  I_AC_Energy_WH(Today, Week,...
     }
     else
     {
@@ -684,6 +684,127 @@ sub ExprMeter($$$$$$$$$$$$)
     }
     elsif ( $ReadingName eq "X_Meter_1_M_Energy_W" )
     {
+        # Anfang EXPORTED
+        my $energy_exported   = ReadingsVal( $DevName, "X_Meter_1_M_Exported", -1 );
+        my $exported_time       = $vval[0] * 10**$vval[1]; ## New Value X_Meter_1_M_Exported
+
+        if ( $energy_exported <= 0 )
+        {
+            readingsBulkUpdate( $hash, "X_M_ExportedToday", "0" );
+        }
+        else
+        {
+            my $ts_exported_today = ReadingsTimestamp( $DevName, "X_M_ExportedToday", 0 );
+            my $exported_today    = ReadingsVal( $DevName, "X_M_ExportedToday", 0 );
+
+            my $time_now = TimeNow();
+            my $date_now = substr( $time_now, 0, 10 );
+
+            my $reading_month = substr( $ts_exported_today, 5, 2 );
+            my $reading_date  = substr( $ts_exported_today, 0, 10 );
+
+            Log3 $hash, 4, "SolarEdge TimeStamp PV-Exported: $ts_exported_today : D1: $reading_date : $time_now :  $date_now ";
+            Log3 $hash, 4, "SolarEdge Jahr Monat PV-Exported: $reading_month : " . "PV_" . ($Pyear2) . "_" . ( $Pmonth + 1 ) . " ----";
+
+            if ( $date_now eq $reading_date )
+            {
+                # Prüfung gleicher Tag
+                #Same Day
+                readingsBulkUpdate( $hash, "X_M_ExportedToday", $exported_today + ( $exported_time - $energy_exported ) );
+            }
+            else
+            {
+                #Next Day
+                my $exported_week = ReadingsVal( $DevName, "X_M_ExportedCurrentWeek", 0 );
+
+                readingsBulkUpdate( $hash, "X_M_ExportedCurrentWeek", $exported_week + $exported_today );
+
+                if ( ( $Pmonth + 1 ) eq $reading_month )
+                {
+                    # Prüfung gleicher Monat
+                    #Same Month
+                    my $energy_month = ReadingsVal( $DevName, "X_M_ExportedCurrentMonth", 0 );
+
+                    readingsBulkUpdate( $hash, "X_M_ExportedCurrentMonth", $exported_month + $exported_today );
+                }
+                else
+                {
+                    # Next Month
+                    my $exported_month = ReadingsVal( $DevName, "X_M_ExportedCurrentMonth", 0 );
+
+                    readingsBulkUpdate( $hash, "X_M_Exported_" . ($Pyear2) . "_" . ($Pmonth), $exported_month );
+                    readingsBulkUpdate( $hash, "X_M_ExportedCurrentMonth",           "0" );
+                }
+
+                # New Day start at 0 again
+                readingsBulkUpdate( $hash, "X_M_ExportedToday", "0" );
+
+                Log3 $hash, 4, "SolarEdge PV-Exported: $exported_today :  $exported_time : $energy_exported  ";
+            }
+        }
+        # Ende EXPORTED
+
+        # Anfang IMPORTED
+        my $energy_imported   = ReadingsVal( $DevName, "X_Meter_1_M_Imported", -1 );
+        my $imported_time       = $vval[0] * 10**$vval[1]; ## New Value X_Meter_1_M_Imported
+
+        if ( $energy_imported <= 0 )
+        {
+            readingsBulkUpdate( $hash, "X_M_ImportedToday", "0" );
+        }
+        else
+        {
+            my $ts_imported_today = ReadingsTimestamp( $DevName, "X_M_ImportedToday", 0 );
+            my $imported_today    = ReadingsVal( $DevName, "X_M_ImportedToday", 0 );
+
+            my $time_now = TimeNow();
+            my $date_now = substr( $time_now, 0, 10 );
+
+            my $reading_month = substr( $ts_imported_today, 5, 2 );
+            my $reading_date  = substr( $ts_imported_today, 0, 10 );
+
+            Log3 $hash, 4, "SolarEdge TimeStamp PV-Imported: $ts_imported_today : D1: $reading_date : $time_now :  $date_now ";
+            Log3 $hash, 4, "SolarEdge Jahr Monat PV-Imported: $reading_month : " . "PV_" . ($Pyear2) . "_" . ( $Pmonth + 1 ) . " ----";
+
+            if ( $date_now eq $reading_date )
+            {
+                # Prüfung gleicher Tag
+                #Same Day
+                readingsBulkUpdate( $hash, "X_M_ImportedToday", $imported_today + ( $imported_time - $energy_imported ) );
+            }
+            else
+            {
+                #Next Day
+                my $imported_week = ReadingsVal( $DevName, "X_M_ImportedCurrentWeek", 0 );
+
+                readingsBulkUpdate( $hash, "X_M_ImportedCurrentWeek", $imported_week + $imported_today );
+
+                if ( ( $Pmonth + 1 ) eq $reading_month )
+                {
+                    # Prüfung gleicher Monat
+                    #Same Month
+                    my $energy_month = ReadingsVal( $DevName, "X_M_ImportedCurrentMonth", 0 );
+
+                    readingsBulkUpdate( $hash, "X_M_ImportedCurrentMonth", $imported_month + $imported_today );
+                }
+                else
+                {
+                    # Next Month
+                    my $imported_month = ReadingsVal( $DevName, "X_M_ImportedCurrentMonth", 0 );
+
+                    readingsBulkUpdate( $hash, "X_M_Imported_" . ($Pyear2) . "_" . ($Pmonth), $imported_month );
+                    readingsBulkUpdate( $hash, "X_M_ImportedCurrentMonth",           "0" );
+                }
+
+                # New Day start at 0 again
+                readingsBulkUpdate( $hash, "X_M_ImportedToday", "0" );
+
+                Log3 $hash, 4, "SolarEdge PV-Imported: $imported_today :  $imported_time : $energy_imported  ";
+            }
+        }
+        # Ende IMPORTED
+
+        # Calc First then Update
         readingsBulkUpdate( $hash, "X_Meter_1_M_Exported",   $vval[0] * 10**$vval[8] );
         readingsBulkUpdate( $hash, "X_Meter_1_M_Exported_A", $vval[1] * 10**$vval[8] );
         readingsBulkUpdate( $hash, "X_Meter_1_M_Exported_B", $vval[2] * 10**$vval[8] );
