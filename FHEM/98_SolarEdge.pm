@@ -686,7 +686,7 @@ sub ExprMeter($$$$$$$$$$$$)
     {
         # Anfang EXPORTED
         my $energy_exported   = ReadingsVal( $DevName, "X_Meter_1_M_Exported", -1 );
-        my $exported_time       = $vval[0] * 10**$vval[1]; ## New Value X_Meter_1_M_Exported
+        my $exported_time       = $vval[0] * 10**$vval[8]; ## New Value X_Meter_1_M_Exported
 
         if ( $energy_exported <= 0 )
         {
@@ -746,7 +746,7 @@ sub ExprMeter($$$$$$$$$$$$)
 
         # Anfang IMPORTED
         my $energy_imported   = ReadingsVal( $DevName, "X_Meter_1_M_Imported", -1 );
-        my $imported_time     = $vval[0] * 10**$vval[1]; ## New Value X_Meter_1_M_Imported
+        my $imported_time     = $vval[4] * 10**$vval[8]; ## New Value X_Meter_1_M_Imported
 
         if ( $energy_imported <= 0 )
         {
