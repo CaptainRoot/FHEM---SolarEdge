@@ -38,7 +38,7 @@ sub SolarEdge_Define($$);    # wird beim 'define' von AESGI-Protokoll Gerät auf
 sub SolarEdge_Notify($$);    # wird beim 'Notify' vom Device aufgerufen
 sub ExprMppt($$$$$$$$);      # Berechnung Wert mit ScaleFactor unter Beachtung Operating_State
 
-my $SolarEdge_Version = '0020 - 10.06.2019 17:00';
+my $SolarEdge_Version = '0021 - 21.06.2019 12:16';
 
 my %SolarEdgedeviceInfo = (
     "h" => {
