@@ -803,8 +803,23 @@ sub ExprMeter($$$$$$$$$$$$)
             }
         }
         # Ende IMPORTED
+        # Energy Consumption kwh
 
-        # Calc First then Update
+        #my $energy_pv = ReadingsVal( $DevName, "I_AC_Energy_WH", -1 );
+        #All Time Consumption
+        #my $consumption_time = ($energy_pv - $energy_exported) + $energy_imported;
+
+        my $imported_today = ReadingsVal( $DevName, "X_M_ImportedToday", 0 );
+        my $exported_today = ReadingsVal( $DevName, "X_M_ExportedToday", 0 );
+        my $pv_today       = ReadingsVal( $DevName, "X_PV_EnergyToday",  0 );
+
+        #Consumption Today
+        my $consumption_today = ($pv_today - $exported_today) +  $imported_today;
+
+        #readingsBulkUpdate( $hash, "X_Calculated_Consumption_kWh", $consumption_time / 1000 );
+        readingsBulkUpdate( $hash, "X_M_ConsumptionToday", $consumption_today );
+
+        #Calc First then Update
         readingsBulkUpdate( $hash, "X_Meter_1_M_Exported",   $vval[0] * 10**$vval[8] );
         readingsBulkUpdate( $hash, "X_Meter_1_M_Exported_A", $vval[1] * 10**$vval[8] );
         readingsBulkUpdate( $hash, "X_Meter_1_M_Exported_B", $vval[2] * 10**$vval[8] );
