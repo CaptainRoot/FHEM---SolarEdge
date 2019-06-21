@@ -1,4 +1,4 @@
-ImportedImportedImportedImported##############################################
+##############################################
 # $Id: 98_SolarEdge.pm 0020 2019-06-10 17:00:00Z CaptainRoot $
 #
 #	fhem Modul für Wechselrichter SolarEdge SE5K
@@ -723,7 +723,7 @@ sub ExprMeter($$$$$$$$$$$$)
                 {
                     # Prüfung gleicher Monat
                     #Same Month
-                    my $energy_month = ReadingsVal( $DevName, "X_M_ExportedCurrentMonth", 0 );
+                    my $exported_month = ReadingsVal( $DevName, "X_M_ExportedCurrentMonth", 0 );
 
                     readingsBulkUpdate( $hash, "X_M_ExportedCurrentMonth", $exported_month + $exported_today );
                 }
@@ -746,7 +746,7 @@ sub ExprMeter($$$$$$$$$$$$)
 
         # Anfang IMPORTED
         my $energy_imported   = ReadingsVal( $DevName, "X_Meter_1_M_Imported", -1 );
-        my $imported_time       = $vval[0] * 10**$vval[1]; ## New Value X_Meter_1_M_Imported
+        my $imported_time     = $vval[0] * 10**$vval[1]; ## New Value X_Meter_1_M_Imported
 
         if ( $energy_imported <= 0 )
         {
@@ -783,7 +783,7 @@ sub ExprMeter($$$$$$$$$$$$)
                 {
                     # Prüfung gleicher Monat
                     #Same Month
-                    my $energy_month = ReadingsVal( $DevName, "X_M_ImportedCurrentMonth", 0 );
+                    my $imported_month = ReadingsVal( $DevName, "X_M_ImportedCurrentMonth", 0 );
 
                     readingsBulkUpdate( $hash, "X_M_ImportedCurrentMonth", $imported_month + $imported_today );
                 }
