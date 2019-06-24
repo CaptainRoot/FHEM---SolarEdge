@@ -608,10 +608,10 @@ sub ExprMppt($$$$$$$$)
         readingsBulkUpdate( $hash, $ReadingName . "_SF", $vval[1] );
     }
 
-    if ( $ReadingName eq "I_AC_Power" )
-    {
-        HelperConsumption( $hash, $DevName );
-    }
+    #if ( $ReadingName eq "I_AC_Power" )
+    #{
+    #    HelperConsumption( $hash, $DevName );
+    #}
 
     Log3 $hash, 4, "SolarEdge $DevName : " . $WertNeu;
     return $WertNeu;
@@ -948,3 +948,4 @@ sub HelperConsumption($$)
 
 =end html
 =cut
+
