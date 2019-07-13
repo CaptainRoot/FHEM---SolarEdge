@@ -37,8 +37,9 @@ sub SolarEdge_Initialize($);
 sub SolarEdge_Define($$);    # wird beim 'define' von AESGI-Protokoll Gerät aufgerufen
 sub SolarEdge_Notify($$);    # wird beim 'Notify' vom Device aufgerufen
 sub ExprMppt($$$$$$$$);      # Berechnung Wert mit ScaleFactor unter Beachtung Operating_State
+sub ExprMeter($$$$$$$$$$$$);  # Berechnung Wert mit ScaleFactor für Meter 1
 
-my $SolarEdge_Version = '0021 - 24.06.2019 17:54';
+my $SolarEdge_Version = '0022 - 13.07.2019 09:09';
 
 my %SolarEdgedeviceInfo = (
     "h" => {
@@ -848,10 +849,10 @@ sub ExprMeter($$$$$$$$$$$$)
         readingsBulkUpdate( $hash, $ReadingName . "_SF", $vval[1] );
     }
 
-    if ( $ReadingName eq "X_Meter_1_M_AC_Power" )
-    {
-        HelperConsumption( $hash, $DevName );
-    }
+    #if ( $ReadingName eq "X_Meter_1_M_AC_Power" )
+    #{
+    #     HelperConsumption( $hash, $DevName );
+    #}
 
     Log3 $hash, 4, "SolarEdge $DevName : " . $WertNeu;
     return $WertNeu;
